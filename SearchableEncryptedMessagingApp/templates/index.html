@@ -1,0 +1,40 @@
+{% extends "main.html" %}
+
+{% block title %}Test Message App | Home{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Say something</h2>
+                <form id="mainform" method="post">
+                    <div class="form-group">
+                        <label for="username">Receiver:</label>
+                        <input id="receiver" class="form-control" name="receiver" placeholder="Receiver" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Enter your message:</label>
+                        <input id="message" class="form-control" name="message" placeholder="Your message here" required>
+                    </div>
+                    <input class="btn btn-default" type="submit" value="Submit">
+                </form>
+
+            </div>
+            <div class="col-md-8">
+
+                <h2>Messages</h2>
+                {% if messages %}
+                    {% for m in messages %}
+                        <p>"{{ m.message }}"</p>
+                        <p>{{ m.sender }} ({{ m.dt }})</p>
+                    {% endfor %}
+                {% else %}
+                    <p>No messages found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
