@@ -74,6 +74,6 @@ class DatabaseHelper(object):
                 # User not found
                 return False
             # Get user hashed password
-            hashed = rows[0][3]
+            hashed = rows[0][3].encode('utf-8')
             # Hash given password using salt
             return (bcrypt.hashpw(password.encode('utf-8'), hashed) == hashed)
