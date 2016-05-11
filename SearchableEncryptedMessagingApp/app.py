@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import bcrypt
 
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
 
@@ -63,9 +64,9 @@ def create_user():
     if request.form['username'] != "" and request.form['password'] != "" and not DB.check_if_user_exists(request.form['username']):
         user = request.form['username']
         password = request.form['password']
-        # TODO: Hash password with salt
+        pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         
-        DB.add_user_to_db(user, password)
+        DB.add_user_to_db(user, pass_hash)
         session['logged_in'] = True
         session['user'] = user
         return redirect(url_for('home'))
