@@ -1,4 +1,5 @@
 import sqlite3
+import bcrypt
 
 def setup(db_config):
     return DatabaseHelper(db_config)
@@ -56,18 +57,23 @@ class DatabaseHelper(object):
             user_exists =  (len(rows) == 1)
             return user_exists
 
-    def add_user_to_db(self, username, password):
+    def add_user_to_db(self, username, pass_hash):
         with sqlite3.connect(self.db_config) as conn:
             c = conn.cursor()
             q = "INSERT INTO users VALUES (NULL, datetime('now'),?,?)"
-            c.execute(q, (username, password))
+            c.execute(q, (username, pass_hash))
             conn.commit()
             return c.lastrowid
 
     def user_authenticated(self, username, password):
         with sqlite3.connect(self.db_config) as conn:
             c = conn.cursor()
-            q = "SELECT * FROM users WHERE username=? AND pass_hash=?"
-            rows = c.execute(q, (username, password)).fetchall()
-            user_authenticated =  (len(rows) == 1)
-            return user_authenticated
+            q = "SELECT * FROM users WHERE username=?"
+            rows = c.execute(q, (username,)).fetchall()
+            if len(rows) != 1:
+                # User not found
+                return False
+            # Get user hashed password
+            hashed = rows[0][3]
+            # Hash given password using salt
+            return (bcrypt.hashpw(password.encode('utf-8'), hashed) == hashed)
