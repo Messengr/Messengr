@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS messages (
   sender_username TEXT NOT NULL,
   receiver_id INTEGER NOT NULL,
   receiver_username TEXT NOT NULL,
-  chat_id INTEGER NOT NULL,
+  chat_id INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   dt TEXT NOT NULL,
   username TEXT NOT NULL,
   pass_hash TEXT NOT NULL,
-  public_key TEXT NOT NULL,
+  public_key TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS chats (
@@ -23,6 +23,6 @@ CREATE TABLE IF NOT EXISTS chats (
   user1_id INTEGER NOT NULL,
   user1_name TEXT NOT NULL,
   user2_id INTEGER NOT NULL,
-  user2_name TEXT NOT NULL,
+  user2_name TEXT NOT NULL
 );
 

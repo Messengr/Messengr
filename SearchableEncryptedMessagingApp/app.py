@@ -12,15 +12,21 @@ app.config.from_object(settings)
 
 DB = db.setup(app.config['DATABASE'])
 
+
 # Standard routing (server-side rendered pages)
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if 'logged_in' in session and 'user' in session:
-        username = session['user']
+        user_id = session['user']['id']
+        username = session['user']['username']
+    else:
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
-        DB.add_message(request.form['message'], session['user'], request.form['receiver'])
-        redirect(url_for('home'))
-    return render_template('index.html', messages=DB.get_message(), session=session)
+        # TODO: Create new chat and redirect to it
+        pass
+
+    return render_template('index.html', chats=DB.get_chat(user_id), user=session['user'])
 
 
 @app.route('/about')
@@ -28,20 +34,20 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if not 'logged_in' in session:
-        return redirect(url_for('login'))
+# @app.route('/admin', methods=['GET', 'POST'])
+# def admin():
+#     if not 'logged_in' in session:
+#         return redirect(url_for('login'))
 
-    if request.method == 'POST':
-        # This little hack is needed for testing due to how Python dictionary keys work
-        DB.delete_message([k[6:] for k in request.form.keys()])
-        redirect(url_for('admin'))
+#     if request.method == 'POST':
+#         # This little hack is needed for testing due to how Python dictionary keys work
+#         DB.delete_message([k[6:] for k in request.form.keys()])
+#         redirect(url_for('admin'))
 
-    messages = DB.get_message()
-    messages.reverse()
+#     messages = DB.get_message()
+#     messages.reverse()
 
-    return render_template('admin.html', messages=messages)
+#     return render_template('admin.html', messages=messages)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -50,7 +56,7 @@ def login():
     if request.method == 'POST':
         if request.form['username'] and request.form['password'] and DB.user_authenticated(request.form['username'], request.form['password']):
             session['logged_in'] = True
-            session['user'] = request.form['username']
+            session['user'] = DB.find_user_by_name(request.form['username'])
             return redirect(url_for('home'))
         else:
             error = 'Invalid username and/or password'
@@ -59,20 +65,24 @@ def login():
 
 @app.route('/user/create', methods=['POST'])
 def create_user():
-    error = "Unexpected error"
-    print(request.form['username'])
-    if request.form['username'] != "" and request.form['password'] != "" and not DB.check_if_user_exists(request.form['username']):
-        user = request.form['username']
-        password = request.form['password']
-        pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        
-        DB.add_user_to_db(user, pass_hash)
-        session['logged_in'] = True
-        session['user'] = user
-        return redirect(url_for('home'))
-    else:
-        error = "Username already taken."
-    return jsonify({'error': error})
+    if len(request.form['username']) == 0 or " " in request.form['username']:
+        return jsonify({'error': "Invalid username. Must be nonempty and contain no spaces."})
+    if len(request.form['password']) < 8:
+        return jsonify({'error': "Invalid password. Must be at least 8 characters."})
+    if DB.check_if_user_exists(request.form['username']):
+        return jsonify({'error': "Username already taken."})
+
+    username = request.form['username']
+    password = request.form['password']
+    pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    # TODO: Replace with actual public key
+    err = DB.add_user_to_db(username, pass_hash, "public_key")
+    if err:
+        return jsonify({'error': "Unexpected error."})
+    session['logged_in'] = True
+    session['user'] = DB.find_user_by_name(username)
+    return redirect(url_for('home'))
 
 
 @app.route('/logout')
@@ -82,33 +92,41 @@ def logout():
     return redirect(url_for('home'))
 
 
-# RESTful routing (serves JSON to provide an external API)
-@app.route('/messages/api', methods=['GET'])
-@app.route('/messages/api/<int:id>', methods=['GET'])
-def get_message_by_id(id=None):
-    messages = DB.get_message(id)
+@app.route('/chat/<int:id>', methods=['GET'])
+def get_chat_messages(id):
+    messages = DB.get_chat_messages(id)
     if not messages:
         return make_response(jsonify({'error': 'Not found'}), 404)
 
     return jsonify({'messages': messages})
 
+# # RESTful routing (serves JSON to provide an external API)
+# @app.route('/messages/api', methods=['GET'])
+# @app.route('/messages/api/<int:id>', methods=['GET'])
+# def get_message_by_id(id=None):
+#     messages = DB.get_message(id)
+#     if not messages:
+#         return make_response(jsonify({'error': 'Not found'}), 404)
 
-@app.route('/messages/api', methods=['POST'])
-def create_message():
-    if not request.json or not 'message' in request.json or not 'receiver' in request.json or not session['logged_in']:
-        return make_response(jsonify({'error': 'Bad request'}), 400)
+#     return jsonify({'messages': messages})
+
+
+# @app.route('/messages/api', methods=['POST'])
+# def create_message():
+#     if not request.json or not 'message' in request.json or not 'receiver' in request.json or not session['logged_in']:
+#         return make_response(jsonify({'error': 'Bad request'}), 400)
     
-    receiver = request.json['receiver']
-    user = session['user']
-    id = DB.add_message(request.json['message'], user, receiver)
+#     receiver = request.json['receiver']
+#     user = session['user']
+#     id = DB.add_message(request.json['message'], user, receiver)
 
-    return get_message_by_id(id), 201
+#     return get_message_by_id(id), 201
 
 
-@app.route('/messages/api/<int:id>', methods=['DELETE'])
-def delete_message_by_id(id):
-    DB.delete_message(id)
-    return jsonify({'result': True})
+# @app.route('/messages/api/<int:id>', methods=['DELETE'])
+# def delete_message_by_id(id):
+#     DB.delete_message(id)
+#     return jsonify({'result': True})
 
 
 if __name__ == '__main__':

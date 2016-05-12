@@ -1,7 +1,17 @@
 import sqlite3
 import bcrypt
 
-MESSAGE_SCHEMA = [
+
+CHAT_SCHEMA = (
+    'id',
+    'dt',
+    'user1_id',
+    'user1_name',
+    'user2_id',
+    'user2_name'
+)
+
+MESSAGE_SCHEMA = (
     'id',
     'dt',
     'message',
@@ -10,7 +20,15 @@ MESSAGE_SCHEMA = [
     'receiver_id',
     'receiver_username',
     'chat_id'
-]
+)
+
+USER_SCHEMA = (
+    'id',
+    'dt',
+    'username',
+    'pass_hash',
+    'public_key'
+)
 
 
 def setup(db_config):
@@ -38,6 +56,31 @@ class DatabaseHelper(object):
             c.execute(q, (user1_id, user1_name, user2_id, user2_name))
             conn.commit()
 
+    def get_chat(self, user_id, chat_id=None):
+        """Return a list of chat objects (as dicts)"""
+        with sqlite3.connect(self.db_config) as conn:
+            c = conn.cursor()
+
+            if chat_id:
+                chat_id = int(chat_id)
+                q = "SELECT * FROM chats WHERE id=? ORDER BY dt DESC"
+                rows = c.execute(q, (chat_id,))
+
+            else:
+                q = "SELECT * FROM chats WHERE user1_id=? OR user2_id=? ORDER BY dt DESC"
+                rows = c.execute(q, (user_id, user_id))
+
+            return [ { CHAT_SCHEMA[i] : r[i] for i in xrange(CHAT_SCHEMA) } for r in rows ]
+
+    def get_chat_messages(self, chat_id):
+        """Return a list of message objects (as dicts)"""
+        with sqlite3.connect(self.db_config) as conn:
+            c = conn.cursor()
+            chat_id = int(chat_id)
+            q = "SELECT * FROM messages WHERE chat_id=? ORDER BY dt DESC"
+            rows = c.execute(q, (chat_id,))
+            return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(MESSAGE_SCHEMA) } for r in rows ]
+
     ### Message queries ###
 
     def get_message(self, id=None):
@@ -54,7 +97,7 @@ class DatabaseHelper(object):
                 q = "SELECT * FROM messages ORDER BY dt DESC"
                 rows = c.execute(q)
 
-            return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(USER_SCHEMA) } for r in rows ]
+            return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(MESSAGE_SCHEMA) } for r in rows ]
 
     def add_message(self, message, sender_id, sender_username, receiver_id, receiver_username, chat_id):
         with sqlite3.connect(self.db_config) as conn:
@@ -63,7 +106,6 @@ class DatabaseHelper(object):
             c.execute(q, (message, sender_id, sender_username, receiver_id, receiver_username, chat_id))
             conn.commit()
             return c.lastrowid
-
 
     def delete_message(self, ids):
         with sqlite3.connect(self.db_config) as conn:
@@ -87,7 +129,8 @@ class DatabaseHelper(object):
             q = "SELECT * FROM users WHERE username=?"
             rows = c.execute(q, (username,)).fetchall()
             if len(rows) > 0:
-                return rows[0]
+                user = rows[0]
+                return {USER_SCHEMA[i] : elm for i, elm in enumerate(user)}
             return None
 
     def check_if_user_exists(self, username):
