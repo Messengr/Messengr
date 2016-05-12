@@ -8,11 +8,19 @@
 
         <div class="row">
             <div class="col-md-4"><h2>Chats</h2></div>
-            <!-- TODO: Make this a form and Add functionality to this button. -->
-            <div class="col-md-4 col-md-offset-4"><button type="button" class="btn btn-success">Start a new chat!</button></div>
+            <div class="col-md-4 col-md-offset-4">
+                {% if error %}
+                    <p class="text-danger">Error: {{ error }}</p>
+                {% endif %}
+                <form action="{{ url_for('home') }}" method="post" class="form-inline">
+                    <label class="sr-only" for="newChat">New Chat</label>
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="receiver" name="receiver" placeholder="Receiver username">
+                    </div>
+                  <button type="submit" class="btn btn-success">New Chat</button>
+                </form>
+            </div>
         </div>
-
-        <div class="row">
 
         <table class="table table-hover" style="margin: auto;">
             <thead>
@@ -25,16 +33,21 @@
             <tbody>
                 {% if chats %}
                     {% for c in chats %}
-                        <tr class="success">
-                            <!-- TODO: add logic to always get the other user's name here -->
-                            <!-- TODO: update data model to keep last message of chat? -->
-                            <td>{{ c.user1_name }}</td>
+                        <tr class="warning" id={{ c.id }}>
+                            {% if c.user1_name == username %}
+                                <td>{{ c.user2_name }}</td>
+                            {% elif c.user2_name == username %}
+                                <td>{{ c.user1_name }}</td>
+                            {% else %}
+                                <td>{{ username }}</td>
+                            {% endif%}
                             <td>{{ c.dt }}</td>
+                            <!-- TODO: update data model to keep last message of chat? -->
                             <td>10 minutes ago</td>
                         </tr> 
                     {% endfor %}
                 {% else %}
-                    <tr class="info">
+                    <tr class="danger">
                         <td></td>
                         <td>No chats found.</td>
                         <td></td>
@@ -43,7 +56,6 @@
             </tbody>
           </table>
 
-      </div>
     </div>
 
 {% endblock %}

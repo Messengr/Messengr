@@ -23,10 +23,14 @@ def home():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        # TODO: Create new chat and redirect to it
-        pass
+        receiver_username = request.form['receiver']
+        if not DB.check_if_user_exists(receiver_username):
+            return render_template('index.html', error="This user does not exist.")
+        receiver = DB.find_user_by_name(receiver_username)
+        chat_id = DB.create_chat(user_id, username, receiver['id'], receiver['username'])
+        return redirect(url_for('chat', id=chat_id))
 
-    return render_template('index.html', chats=DB.get_chat(user_id), user=session['user'])
+    return render_template('index.html', chats=DB.get_chat(user_id), username=session['user']['username'])
 
 
 @app.route('/about')
@@ -93,12 +97,17 @@ def logout():
 
 
 @app.route('/chat/<int:id>', methods=['GET'])
-def get_chat_messages(id):
-    messages = DB.get_chat_messages(id)
-    if not messages:
+def chat(id):
+    user_id = session['user']['id']
+    chat = DB.get_chat(user_id, id)
+    if not chat or (user_id != chat[0]['user1_id'] and user_id != chat[0]['user2_id']):
         return make_response(jsonify({'error': 'Not found'}), 404)
+    messages = DB.get_chat_messages(id)
+    other_user = chat[0]['user1_name']
+    if user_id == chat[0]['user1_id']:
+        other_user = chat[0]['user2_name']
+    return render_template('chat.html', messages=messages, user=user_id, other_user=other_user)
 
-    return jsonify({'messages': messages})
 
 # # RESTful routing (serves JSON to provide an external API)
 # @app.route('/messages/api', methods=['GET'])

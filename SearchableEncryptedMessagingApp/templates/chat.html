@@ -19,12 +19,12 @@
                     <div class="panel-body msg_container_base">
                         {% if messages %}
                             {% for m in messages %}
-                                {% if m.sender_username == user['username'] %}
+                                {% if m.sender_id == user %}
                                     <div class="row msg_container base_sent">
                                         <div class="col-md-10 col-xs-10">
                                             <div class="messages msg_sent">
                                                 <p class="">{{ m.message }}</p>
-                                                <time datetime="{{ m.dt }}" class="">{{ user }} • {{ m.dt }}</time>
+                                                <time datetime="{{ m.dt }}" class="">{{ m.sender_username }} • {{ m.dt }}</time>
                                             </div>
                                         </div>
                                         <div class="col-md-2 col-xs-2 avatar">

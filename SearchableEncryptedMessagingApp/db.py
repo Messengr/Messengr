@@ -55,6 +55,7 @@ class DatabaseHelper(object):
             q = "INSERT INTO chats VALUES (NULL, datetime('now'),?,?,?,?)"
             c.execute(q, (user1_id, user1_name, user2_id, user2_name))
             conn.commit()
+            return c.lastrowid
 
     def get_chat(self, user_id, chat_id=None):
         """Return a list of chat objects (as dicts)"""
@@ -69,8 +70,7 @@ class DatabaseHelper(object):
             else:
                 q = "SELECT * FROM chats WHERE user1_id=? OR user2_id=? ORDER BY dt DESC"
                 rows = c.execute(q, (user_id, user_id))
-
-            return [ { CHAT_SCHEMA[i] : r[i] for i in xrange(CHAT_SCHEMA) } for r in rows ]
+            return [ { CHAT_SCHEMA[i] : r[i] for i in xrange(len(CHAT_SCHEMA)) } for r in rows ]
 
     def get_chat_messages(self, chat_id):
         """Return a list of message objects (as dicts)"""
@@ -79,7 +79,7 @@ class DatabaseHelper(object):
             chat_id = int(chat_id)
             q = "SELECT * FROM messages WHERE chat_id=? ORDER BY dt DESC"
             rows = c.execute(q, (chat_id,))
-            return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(MESSAGE_SCHEMA) } for r in rows ]
+            return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(len(MESSAGE_SCHEMA)) } for r in rows ]
 
     ### Message queries ###
 
@@ -97,7 +97,7 @@ class DatabaseHelper(object):
                 q = "SELECT * FROM messages ORDER BY dt DESC"
                 rows = c.execute(q)
 
-            return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(MESSAGE_SCHEMA) } for r in rows ]
+            return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(len(MESSAGE_SCHEMA)) } for r in rows ]
 
     def add_message(self, message, sender_id, sender_username, receiver_id, receiver_username, chat_id):
         with sqlite3.connect(self.db_config) as conn:
