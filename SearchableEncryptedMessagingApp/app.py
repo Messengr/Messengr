@@ -20,7 +20,6 @@ def home():
     if request.method == 'POST':
         DB.add_message(request.form['message'], session['user'], request.form['receiver'])
         redirect(url_for('home'))
-    print("uh oh")
     return render_template('index.html', messages=DB.get_message(), session=session)
 
 
@@ -56,6 +55,7 @@ def login():
         else:
             error = 'Invalid username and/or password'
     return render_template('login.html', error=error)
+
 
 @app.route('/user/create', methods=['POST'])
 def create_user():
