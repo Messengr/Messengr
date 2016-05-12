@@ -69,21 +69,27 @@ def login():
 
 @app.route('/user/create', methods=['POST'])
 def create_user():
-    if len(request.form['username']) == 0 or " " in request.form['username']:
-        return jsonify({'error': "Invalid username. Must be nonempty and contain no spaces."})
-    if len(request.form['password']) < 8:
-        return jsonify({'error': "Invalid password. Must be at least 8 characters."})
-    if DB.check_if_user_exists(request.form['username']):
-        return jsonify({'error': "Username already taken."})
-
-    username = request.form['username']
-    password = request.form['password']
-    public_key = request.form['public_key']
+    username = request.form.get('username')
+    password = request.form.get('password') 
+    public_key = request.form.get('public_key')
+    
+    error = None
+    if None in [username, password, public_key]:
+        error  = "Request missing a field!"
+    if len(username) == 0 or " " in username:
+        error = "Invalid username. Must be nonempty and contain no spaces."
+    if len(password) < 8:
+        error = "Invalid password. Must be at least 8 characters."
+    if DB.check_if_user_exists(username):
+        error = "Username already taken."
+    
+    if error is not None:
+        return render_template('login.html', error=error)
     
     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     err = DB.add_user_to_db(username, pass_hash, public_key)
-    if err == None:
+    if err is None:
         return jsonify({'error': "Unexpected error."})
     session['logged_in'] = True
     session['user'] = DB.find_user_by_name(username)
