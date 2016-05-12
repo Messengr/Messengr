@@ -78,10 +78,11 @@ def create_user():
 
     username = request.form['username']
     password = request.form['password']
+    public_key = request.form['public_key']
+    
     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-    # TODO: Replace with actual public key
-    err = DB.add_user_to_db(username, pass_hash, "public_key")
+    err = DB.add_user_to_db(username, pass_hash, public_key)
     if err == None:
         return jsonify({'error': "Unexpected error."})
     session['logged_in'] = True
