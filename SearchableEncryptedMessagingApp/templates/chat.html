@@ -31,7 +31,8 @@
                                             <img src="http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg" height="100" width="100" class="img-responsive">
                                         </div>
                                     </div>
-                                {% else %}
+                                {% endif %}
+                                {% if m.receiver_id == user %}
                                     <div class="row msg_container base_receive">
                                         <div class="col-md-2 col-xs-2 avatar">
                                             <img src="http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg" height="100" width="100" class="img-responsive">

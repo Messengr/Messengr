@@ -122,8 +122,6 @@ def chat(id):
         other_username = chat['user2_name']
     # If POST, new message has been sent
     if request.method == 'POST':
-        print request
-        print request.form
         message = request.form['message']
         DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
         return redirect(url_for('chat', id=chat_id))
