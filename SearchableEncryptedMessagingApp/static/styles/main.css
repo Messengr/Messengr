@@ -2,6 +2,10 @@ body {
     padding-top: 6rem;
 }
 
+tr {
+  cursor: pointer;
+}
+
 /* Taken from http://www.bootply.com/vBXdqtPuig */
 body{
     height:100%;

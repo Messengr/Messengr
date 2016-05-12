@@ -27,3 +27,9 @@ $('#create_account').submit(function(eventObj) {
     $(this).append('<input type="hidden" name="public_key" value="' + pub_serialized + '" /> ');
     return true;
 });
+
+$('tr').click(function() {
+    if (this.id !== "") {
+        window.location.href = '/chat/' + this.id;
+    }
+});
