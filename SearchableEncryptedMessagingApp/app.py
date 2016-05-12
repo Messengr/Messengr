@@ -25,7 +25,7 @@ def home():
     if request.method == 'POST':
         receiver_username = request.form['receiver']
         if not DB.check_if_user_exists(receiver_username):
-            return render_template('index.html', error="This user does not exist.")
+            return render_template('index.html', chats=DB.get_chat(user_id), username=session['user']['username'], error="This user does not exist.")
         receiver = DB.find_user_by_name(receiver_username)
         chat_id = DB.create_chat(user_id, username, receiver['id'], receiver['username'])
         return redirect(url_for('chat', id=chat_id))
