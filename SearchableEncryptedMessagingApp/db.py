@@ -80,7 +80,7 @@ class DatabaseHelper(object):
         with sqlite3.connect(self.db_config) as conn:
             c = conn.cursor()
             chat_id = int(chat_id)
-            q = "SELECT * FROM messages WHERE chat_id=? ORDER BY dt DESC"
+            q = "SELECT * FROM messages WHERE chat_id=? ORDER BY dt ASC"
             rows = c.execute(q, (chat_id,))
             return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(len(MESSAGE_SCHEMA)) } for r in rows ]
 

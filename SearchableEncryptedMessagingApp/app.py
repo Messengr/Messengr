@@ -97,19 +97,33 @@ def logout():
     return redirect(url_for('home'))
 
 
-@app.route('/chat/<int:id>', methods=['GET'])
+@app.route('/chat/<int:id>', methods=['GET', 'POST'])
 def chat(id):
+    # Check that user is logged in
     if 'logged_in' not in session or 'user' not in session:
         return redirect(url_for('login'))
     user_id = session['user']['id']
+    username = session['user']['username']
+    # Check that this chat exists and user is valid participant
     chat = DB.get_chat(id)
     if not chat or (user_id != chat['user1_id'] and user_id != chat['user2_id']):
         return make_response(jsonify({'error': 'Not found'}), 404)
-    messages = DB.get_chat_messages(id)
-    other_user = chat['user1_name']
+    chat_id = chat['id']
+    # Get the 'other' user in the chat
+    other_userid = chat['user1_id']
+    other_username = chat['user1_name']
     if user_id == chat['user1_id']:
-        other_user = chat['user2_name']
-    return render_template('chat.html', messages=messages, user=user_id, other_user=other_user)
+        other_userid = chat['user2_id']
+        other_username = chat['user2_name']
+    # If POST, new message has been sent
+    if request.method == 'POST':
+        print request
+        print request.form
+        message = request.form['message']
+        DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
+        return redirect(url_for('chat', id=chat_id))
+    messages = DB.get_chat_messages(id)
+    return render_template('chat.html', chat_id=chat_id, messages=messages, user=user_id, other_user=other_username)
 
 
 # # RESTful routing (serves JSON to provide an external API)
