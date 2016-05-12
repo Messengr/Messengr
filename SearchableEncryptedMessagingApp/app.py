@@ -98,6 +98,8 @@ def logout():
 
 @app.route('/chat/<int:id>', methods=['GET'])
 def chat(id):
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
     user_id = session['user']['id']
     chat = DB.get_chat(id)
     if not chat or (user_id != chat['user1_id'] and user_id != chat['user2_id']):
