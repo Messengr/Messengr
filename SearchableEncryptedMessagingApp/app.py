@@ -25,12 +25,12 @@ def home():
     if request.method == 'POST':
         receiver_username = request.form['receiver']
         if not DB.check_if_user_exists(receiver_username):
-            return render_template('index.html', chats=DB.get_chat(user_id), username=session['user']['username'], error="This user does not exist.")
+            return render_template('index.html', chats=DB.get_chats_for_user(user_id), username=session['user']['username'], error="This user does not exist.")
         receiver = DB.find_user_by_name(receiver_username)
         chat_id = DB.create_chat(user_id, username, receiver['id'], receiver['username'])
         return redirect(url_for('chat', id=chat_id))
 
-    return render_template('index.html', chats=DB.get_chat(user_id), username=session['user']['username'])
+    return render_template('index.html', chats=DB.get_chats_for_user(user_id), username=session['user']['username'])
 
 
 @app.route('/about')
@@ -81,8 +81,8 @@ def create_user():
     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     # TODO: Replace with actual public key
-    err = DB.add_user_to_db(username, pass_hash, "public_key")
-    if err == None:
+    no_err = DB.add_user_to_db(username, pass_hash, "public_key")
+    if no_err is None:
         return jsonify({'error': "Unexpected error."})
     session['logged_in'] = True
     session['user'] = DB.find_user_by_name(username)
@@ -99,13 +99,13 @@ def logout():
 @app.route('/chat/<int:id>', methods=['GET'])
 def chat(id):
     user_id = session['user']['id']
-    chat = DB.get_chat(user_id, id)
-    if not chat or (user_id != chat[0]['user1_id'] and user_id != chat[0]['user2_id']):
+    chat = DB.get_chat(id)
+    if not chat or (user_id != chat['user1_id'] and user_id != chat['user2_id']):
         return make_response(jsonify({'error': 'Not found'}), 404)
     messages = DB.get_chat_messages(id)
-    other_user = chat[0]['user1_name']
-    if user_id == chat[0]['user1_id']:
-        other_user = chat[0]['user2_name']
+    other_user = chat['user1_name']
+    if user_id == chat['user1_id']:
+        other_user = chat['user2_name']
     return render_template('chat.html', messages=messages, user=user_id, other_user=other_user)
 
 
