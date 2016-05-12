@@ -11,7 +11,25 @@
 </head>
     
 <body>
-    <button onclick="generateKeys()">Generate Keys</button>
+    <div id="key_generation">
+        Public Key:<br>
+        <textarea id="pk" rows="4" cols="50"></textarea><br>
+        Secret Key:<br>
+        <textarea id="sk" rows="4" cols="50"></textarea><br>
+        <button onclick="generateKeys()">Generate Keys</button>    
+    </div>
+    <br>
+    <div id="encryption">
+        Message to encrypt:<br>
+        <textarea id="message" rows="4" cols="50"></textarea><br>
+
+        Encrypted message:<br>
+        <textarea id="ciphertext" rows="4" cols="50"></textarea><br>
+
+        Decrypted plaintext:<br>
+        <textarea id="plaintext" rows="4" cols="50"></textarea><br>
+    </div>
+    <button onclick="testECC()">Encrypt message!</button>
     <div id="keys">
     </div>
 </body>
