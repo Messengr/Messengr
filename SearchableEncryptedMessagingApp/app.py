@@ -82,7 +82,7 @@ def create_user():
 
     # TODO: Replace with actual public key
     err = DB.add_user_to_db(username, pass_hash, "public_key")
-    if err:
+    if err == None:
         return jsonify({'error': "Unexpected error."})
     session['logged_in'] = True
     session['user'] = DB.find_user_by_name(username)
