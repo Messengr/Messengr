@@ -84,8 +84,7 @@ def create_user():
         error = "Username already taken."
     
     if error is not None:
-        return render_template('login.html', error=error)
-    
+        return render_template('login.html', error=error)    
     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     no_err = DB.add_user_to_db(username, pass_hash, public_key)
