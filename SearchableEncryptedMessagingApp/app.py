@@ -70,11 +70,11 @@ def login():
 @app.route('/user/create', methods=['POST'])
 def create_user():
     if len(request.form['username']) == 0 or " " in request.form['username']:
-        return jsonify({'error': "Invalid username. Must be nonempty and contain no spaces."})
+        return render_template('login.html', error="Invalid username. Must be nonempty and contain no spaces.")
     if len(request.form['password']) < 8:
-        return jsonify({'error': "Invalid password. Must be at least 8 characters."})
+        return render_template('login.html', error="Invalid password. Must be at least 8 characters.")
     if DB.check_if_user_exists(request.form['username']):
-        return jsonify({'error': "Username already taken."})
+        return render_template('login.html', error="Username already taken.")
 
     username = request.form['username']
     password = request.form['password']
