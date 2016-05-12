@@ -57,20 +57,23 @@ class DatabaseHelper(object):
             conn.commit()
             return c.lastrowid
 
-    def get_chat(self, user_id, chat_id=None):
+    def get_chats_for_user(self, user_id):
         """Return a list of chat objects (as dicts)"""
         with sqlite3.connect(self.db_config) as conn:
             c = conn.cursor()
-
-            if chat_id:
-                chat_id = int(chat_id)
-                q = "SELECT * FROM chats WHERE id=? ORDER BY dt DESC"
-                rows = c.execute(q, (chat_id,))
-
-            else:
-                q = "SELECT * FROM chats WHERE user1_id=? OR user2_id=? ORDER BY dt DESC"
-                rows = c.execute(q, (user_id, user_id))
+            q = "SELECT * FROM chats WHERE user1_id=? OR user2_id=? ORDER BY dt DESC"
+            rows = c.execute(q, (user_id, user_id))
             return [ { CHAT_SCHEMA[i] : r[i] for i in xrange(len(CHAT_SCHEMA)) } for r in rows ]
+
+    def get_chat(self, chat_id):
+        with sqlite3.connect(self.db_config) as conn:
+            c = conn.cursor()
+            chat_id = int(chat_id)
+            q = "SELECT * FROM chats WHERE id=? ORDER BY dt DESC"
+            chat = c.execute(q, (chat_id,)).fetchone()
+            if chat is None:
+                return None
+            return { CHAT_SCHEMA[i] : chat[i] for i in xrange(len(CHAT_SCHEMA)) }
 
     def get_chat_messages(self, chat_id):
         """Return a list of message objects (as dicts)"""
