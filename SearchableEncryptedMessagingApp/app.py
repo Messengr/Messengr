@@ -155,12 +155,14 @@ def new_message(data):
     if user_id == chat['user1_id']:
         other_userid = chat['user2_id']
         other_username = chat['user2_name']
-    # Insert into DB
+    # Insert message into DB
     msg_id = DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
     msg = DB.get_message(msg_id)
     if len(msg) != 1:
         return make_response(jsonify({'error': 'Not found'}), 404)
     msg = msg[0]
+    # TODO: Check that this does not give error?
+    DB.update_chat_last_message_time(chat_id, msg['dt'])
     emit('message', {
         'sender': msg['sender_username'],
         'receiver': msg['receiver_username'],

@@ -42,8 +42,7 @@
                                 <td>{{ username }}</td>
                             {% endif%}
                             <td>{{ c.dt }}</td>
-                            <!-- TODO: update data model to keep last message of chat? -->
-                            <td>10 minutes ago</td>
+                            <td>{{ c.last_message_dt }}</td>
                         </tr> 
                     {% endfor %}
                 {% else %}

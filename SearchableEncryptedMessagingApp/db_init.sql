@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS chats (
   user1_id INTEGER NOT NULL,
   user1_name TEXT NOT NULL,
   user2_id INTEGER NOT NULL,
-  user2_name TEXT NOT NULL
+  user2_name TEXT NOT NULL,
+  last_message_dt TEXT NOT NULL
 );
 
