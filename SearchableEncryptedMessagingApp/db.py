@@ -8,7 +8,8 @@ CHAT_SCHEMA = (
     'user1_id',
     'user1_name',
     'user2_id',
-    'user2_name'
+    'user2_name',
+    'last_message_dt'
 )
 
 MESSAGE_SCHEMA = (
@@ -52,7 +53,7 @@ class DatabaseHelper(object):
     def create_chat(self, user1_id, user1_name, user2_id, user2_name):
         with sqlite3.connect(self.db_config) as conn:
             c = conn.cursor()
-            q = "INSERT INTO chats VALUES (NULL, datetime('now'),?,?,?,?)"
+            q = "INSERT INTO chats VALUES (NULL, datetime('now'),?,?,?,?,datetime('now'))"
             c.execute(q, (user1_id, user1_name, user2_id, user2_name))
             conn.commit()
             return c.lastrowid
@@ -61,7 +62,7 @@ class DatabaseHelper(object):
         """Return a list of chat objects (as dicts)"""
         with sqlite3.connect(self.db_config) as conn:
             c = conn.cursor()
-            q = "SELECT * FROM chats WHERE user1_id=? OR user2_id=? ORDER BY dt DESC"
+            q = "SELECT * FROM chats WHERE user1_id=? OR user2_id=? ORDER BY last_message_dt DESC"
             rows = c.execute(q, (user_id, user_id))
             return [ { CHAT_SCHEMA[i] : r[i] for i in xrange(len(CHAT_SCHEMA)) } for r in rows ]
 
@@ -69,7 +70,7 @@ class DatabaseHelper(object):
         with sqlite3.connect(self.db_config) as conn:
             c = conn.cursor()
             chat_id = int(chat_id)
-            q = "SELECT * FROM chats WHERE id=? ORDER BY dt DESC"
+            q = "SELECT * FROM chats WHERE id=?"
             chat = c.execute(q, (chat_id,)).fetchone()
             if chat is None:
                 return None
@@ -83,6 +84,14 @@ class DatabaseHelper(object):
             q = "SELECT * FROM messages WHERE chat_id=? ORDER BY dt ASC"
             rows = c.execute(q, (chat_id,))
             return [ { MESSAGE_SCHEMA[i] : r[i] for i in xrange(len(MESSAGE_SCHEMA)) } for r in rows ]
+
+    def update_chat_last_message_time(self, chat_id, last_message_dt):
+        with sqlite3.connect(self.db_config) as conn:
+            c = conn.cursor()
+            chat_id = int(chat_id)
+            q = "UPDATE chats SET last_message_dt=? WHERE id=?"
+            c.execute(q, (last_message_dt, chat_id))
+            conn.commit()
 
     ### Message queries ###
 
