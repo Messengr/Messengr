@@ -29,6 +29,7 @@ $(document).ready(function() {
         });
     });
 
+    // Redirect to corresponding chat when clicking on table row
     $('tr').click(function() {
         if (this.id !== "") {
             window.location.href = '/chat/' + this.id;

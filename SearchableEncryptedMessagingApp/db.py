@@ -128,7 +128,7 @@ class DatabaseHelper(object):
             rows = c.execute(q, (username,)).fetchall()
             if len(rows) > 0:
                 user = rows[0]
-                return {USER_SCHEMA[i] : elm for i, elm in enumerate(user)}
+                return {USER_SCHEMA[i] : user[i] for i in xrange(len(USER_SCHEMA))}
             return None
 
     def check_if_user_exists(self, username):
@@ -161,8 +161,12 @@ class DatabaseHelper(object):
             if len(rows) != 1:
                 # User not found
                 return False
+            # Get user
+            user = rows[0]
+            # Get right index of 'pass_hash'
+            index = USER_SCHEMA.index('pass_hash')
             # Get user hashed password
-            hashed = rows[0][3].encode('utf-8')
+            hashed = user[index].encode('utf-8')
             # Hash given password using salt
             return (bcrypt.hashpw(password.encode('utf-8'), hashed) == hashed)
 

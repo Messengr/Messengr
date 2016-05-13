@@ -26,9 +26,11 @@ $(document).ready(function(){
         // Cache current user's name
         current_username = data['username'];
     });
+    // Status message when user enter/leaves chat
     socket.on('status', function(data) {
         alert(data['msg']);
     });
+    // Display new message
     socket.on('message', function(data) {
         var msg = data['msg'];
         var sender = data['sender'];
@@ -40,17 +42,21 @@ $(document).ready(function(){
         if (current_username == receiver) {
             $("#chat_base").append(newReceiverMessage(msg, sender, dt));
         }
+        // Scroll to bottom
         $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
     });
 
+    // Click 'Send' button when 'Enter' key is pressed
     $("#message").keyup(function(event){
         if(event.keyCode == 13){
             $("#send_message").click();
         }
     });
+    // Send new message to server when 'Send' button is clicked
     $("#send_message").click(function() {
         var message = $('#message').val();
         if (message === '') {
+            // Empty message, do not send
             return;
         }
         // Clear message box
@@ -58,6 +64,7 @@ $(document).ready(function(){
         // Send message to server
         socket.emit('new_message', {msg: message});
     });
+    // Disconnect socket and go to home page when 'Leave Chat' button is clicked
     $('#leaveChat').click(function (url) {
         socket.emit('left', {}, function() {
             socket.disconnect();
