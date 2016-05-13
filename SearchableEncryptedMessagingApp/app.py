@@ -2,6 +2,7 @@ import os
 import sqlite3
 import bcrypt
 from string import ascii_lowercase
+import functools
 
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit, disconnect
@@ -119,7 +120,7 @@ def chat(id):
 def authenticated_only(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
-        if not 'logged_in' not in session or 'user' not in session:
+        if 'logged_in' not in session or 'user' not in session:
             disconnect()
         else:
             return f(*args, **kwargs)
