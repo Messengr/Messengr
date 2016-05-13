@@ -120,8 +120,15 @@ def chat(id):
 def joined(data):
     """Sent by clients when they enter a chat.
     A status message is broadcast to all people in the chat."""
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
     username = session['user']['username']
     chat_id = session['chat_id']
+    if username is None or chat_id is None:
+        return make_response(jsonify({'error': 'Not found'}), 404)
+    chat = DB.get_chat(chat_id)
+    if username != chat['user1_name'] and username != chat['user2_name']:
+        return make_response(jsonify({'error': 'Not found'}), 404)
     join_room(chat_id)
     emit('username', {'username': username}, room=request.sid)
     emit('status', {'msg': username + ' has entered the room.'}, room=chat_id)
@@ -131,11 +138,17 @@ def joined(data):
 def new_message(data):
     """Sent by a client when the user entered a new message.
     The message is sent to both people in the chat."""
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
     message = data['msg']
     user_id = session['user']['id']
     username = session['user']['username']
     chat_id = session['chat_id']
+    if None in [message, user_id, chat_id]:
+        return make_response(jsonify({'error': 'Not found'}), 404)
     chat = DB.get_chat(chat_id)
+    if username != chat['user1_name'] and username != chat['user2_name']:
+        return make_response(jsonify({'error': 'Not found'}), 404)
     # Get the 'other' user in the chat
     other_userid = chat['user1_id']
     other_username = chat['user1_name']
@@ -146,11 +159,11 @@ def new_message(data):
     msg_id = DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
     msg = DB.get_message(msg_id)
     if len(msg) != 1:
-        print "Error"
-        return
+        return make_response(jsonify({'error': 'Not found'}), 404)
     msg = msg[0]
     emit('message', {
         'sender': msg['sender_username'],
+        'receiver': msg['receiver_username'],
         'msg': msg['message'],
         'dt': msg['dt']
     }, room=chat_id)
@@ -160,6 +173,17 @@ def new_message(data):
 def left(data):
     """Sent by clients when they leave a chat.
     A status message is broadcast to both people in the chat."""
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
+    chat_id = session['chat_id']
+    if chat_id is None:
+        return make_response(jsonify({'error': 'Not found'}), 404)
+    chat = DB.get_chat(chat_id)
+    username = session['user']['username']
+    if chat is None or username is None:
+        return make_response(jsonify({'error': 'Not found'}), 404)
+    if username != chat['user1_name'] and username != chat['user2_name']:
+        return make_response(jsonify({'error': 'Not found'}), 404)
     leave_room(session['chat_id'])
     session['chat_id'] = None
 

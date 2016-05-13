@@ -31,16 +31,15 @@ $(document).ready(function(){
     });
     socket.on('message', function(data) {
         var msg = data['msg'];
-        var username = data['sender'];
+        var sender = data['sender'];
+        var receiver = data['receiver'];
         var dt = data['dt'];
-        var new_message;
-        if (current_username == username) {
-            new_message = newSenderMessage(msg, username, dt);
+        if (current_username == sender) {
+            $("#chat_base").append(newSenderMessage(msg, sender, dt));
         }
-        else {
-            new_message = newReceiverMessage(msg, username, dt);
+        if (current_username == receiver) {
+            $("#chat_base").append(newReceiverMessage(msg, sender, dt));
         }
-        $("#chat_base").append(new_message);
         $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
     });
 
