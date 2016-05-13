@@ -3,12 +3,14 @@ import sqlite3
 import bcrypt
 
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
 
 import settings
 import db
 
 app = Flask(__name__)
 app.config.from_object(settings)
+socketio = SocketIO(app)
 
 DB = db.setup(app.config['DATABASE'])
 
@@ -99,10 +101,11 @@ def create_user():
 def logout():
     session.pop('logged_in', None)
     session.pop('user', None)
-    return redirect(url_for('home'))
+    session.pop('chat_id', None)
+    return redirect(url_for('login'))
 
 
-@app.route('/chat/<int:id>', methods=['GET', 'POST'])
+@app.route('/chat/<int:id>')
 def chat(id):
     # Check that user is logged in
     if 'logged_in' not in session or 'user' not in session:
@@ -114,19 +117,63 @@ def chat(id):
     if not chat or (user_id != chat['user1_id'] and user_id != chat['user2_id']):
         return make_response(jsonify({'error': 'Not found'}), 404)
     chat_id = chat['id']
+    session['chat_id'] = chat_id
     # Get the 'other' user in the chat
     other_userid = chat['user1_id']
     other_username = chat['user1_name']
     if user_id == chat['user1_id']:
         other_userid = chat['user2_id']
         other_username = chat['user2_name']
-    # If POST, new message has been sent
-    if request.method == 'POST':
-        message = request.form['message']
-        DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
-        return redirect(url_for('chat', id=chat_id))
     messages = DB.get_chat_messages(id)
     return render_template('chat.html', chat_id=chat_id, messages=messages, user=user_id, other_user=other_username)
+
+
+@socketio.on('joined', namespace='/chat')
+def joined(data):
+    """Sent by clients when they enter a chat.
+    A status message is broadcast to all people in the chat."""
+    username = session['user']['username']
+    chat_id = session['chat_id']
+    join_room(chat_id)
+    emit('username', {'username': username}, room=request.sid)
+    emit('status', {'msg': username + ' has entered the room.'}, room=chat_id)
+
+
+@socketio.on('new_message', namespace='/chat')
+def new_message(data):
+    """Sent by a client when the user entered a new message.
+    The message is sent to both people in the chat."""
+    message = data['msg']
+    user_id = session['user']['id']
+    username = session['user']['username']
+    chat_id = session['chat_id']
+    chat = DB.get_chat(chat_id)
+    # Get the 'other' user in the chat
+    other_userid = chat['user1_id']
+    other_username = chat['user1_name']
+    if user_id == chat['user1_id']:
+        other_userid = chat['user2_id']
+        other_username = chat['user2_name']
+    # Insert into DB
+    msg_id = DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
+    msg = DB.get_message(msg_id)
+    if len(msg) != 1:
+        print "Error"
+        return
+    msg = msg[0]
+    emit('message', {
+        'sender': msg['sender_username'],
+        'msg': msg['message'],
+        'dt': msg['dt']
+    }, room=chat_id)
+
+
+@socketio.on('left', namespace='/chat')
+def left(data):
+    """Sent by clients when they leave a chat.
+    A status message is broadcast to both people in the chat."""
+    leave_room(session['chat_id'])
+    session['chat_id'] = None
 
 
 # # RESTful routing (serves JSON to provide an external API)
@@ -178,4 +225,4 @@ if __name__ == '__main__':
         except sqlite3.OperationalError:
             print "Couldn't execute the SQL, exiting..."
             raise
-    app.run(host='0.0.0.0', debug=True)
+    socketio.run(app)
