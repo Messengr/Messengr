@@ -110,20 +110,6 @@ class DatabaseHelper(object):
             conn.commit()
             return c.lastrowid
 
-    def delete_message(self, ids):
-        with sqlite3.connect(self.db_config) as conn:
-            c = conn.cursor()
-            q = "DELETE FROM messages WHERE id=?"
-
-            # Try/catch in case 'ids' isn't an iterable
-            try:
-                for i in ids:
-                    c.execute(q, (int(i),))
-            except TypeError:
-                c.execute(q, (int(ids),))
-
-            conn.commit()
-
     ### User queries ###
 
     def find_user_by_name(self, username):

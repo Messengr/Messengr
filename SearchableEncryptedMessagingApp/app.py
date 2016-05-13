@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import bcrypt
+from string import ascii_lowercase
 
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
@@ -14,6 +15,7 @@ socketio = SocketIO(app)
 
 DB = db.setup(app.config['DATABASE'])
 
+VALID_USERNAME_CHARS = set(['-', '_'] + [str(i) for i in xrange(0,10)] + list(ascii_lowercase))
 
 # Standard routing (server-side rendered pages)
 @app.route('/', methods=['GET', 'POST'])
@@ -39,23 +41,6 @@ def home():
 def about():
     return render_template('about.html')
 
-
-# @app.route('/admin', methods=['GET', 'POST'])
-# def admin():
-#     if not 'logged_in' in session:
-#         return redirect(url_for('login'))
-
-#     if request.method == 'POST':
-#         # This little hack is needed for testing due to how Python dictionary keys work
-#         DB.delete_message([k[6:] for k in request.form.keys()])
-#         redirect(url_for('admin'))
-
-#     messages = DB.get_message()
-#     messages.reverse()
-
-#     return render_template('admin.html', messages=messages)
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -74,12 +59,15 @@ def create_user():
     username = request.form.get('username')
     password = request.form.get('password') 
     public_key = request.form.get('public_key')
+
     
     error = None
     if None in [username, password, public_key]:
         error  = "Request missing a field!"
-    if len(username) == 0 or " " in username:
-        error = "Invalid username. Must be nonempty and contain no spaces."
+    if len(username) == 0 or len(username) > 16:
+        error = "Invalid username. Must be nonempty and contain at most 16 characters."
+    if len([c for c in username if c.lower() not in VALID_USERNAME_CHARS]) > 0:
+        error = "Invalid username. Must contain only letters (a-z), numbers (0-9), dashes (-), underscores (_)."
     if len(password) < 8:
         error = "Invalid password. Must be at least 8 characters."
     if DB.check_if_user_exists(username):
@@ -174,35 +162,6 @@ def left(data):
     A status message is broadcast to both people in the chat."""
     leave_room(session['chat_id'])
     session['chat_id'] = None
-
-
-# # RESTful routing (serves JSON to provide an external API)
-# @app.route('/messages/api', methods=['GET'])
-# @app.route('/messages/api/<int:id>', methods=['GET'])
-# def get_message_by_id(id=None):
-#     messages = DB.get_message(id)
-#     if not messages:
-#         return make_response(jsonify({'error': 'Not found'}), 404)
-
-#     return jsonify({'messages': messages})
-
-
-# @app.route('/messages/api', methods=['POST'])
-# def create_message():
-#     if not request.json or not 'message' in request.json or not 'receiver' in request.json or not session['logged_in']:
-#         return make_response(jsonify({'error': 'Bad request'}), 400)
-    
-#     receiver = request.json['receiver']
-#     user = session['user']
-#     id = DB.add_message(request.json['message'], user, receiver)
-
-#     return get_message_by_id(id), 201
-
-
-# @app.route('/messages/api/<int:id>', methods=['DELETE'])
-# def delete_message_by_id(id):
-#     DB.delete_message(id)
-#     return jsonify({'result': True})
 
 
 if __name__ == '__main__':
