@@ -4,7 +4,7 @@ import bcrypt
 from string import ascii_lowercase
 
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
-from flask_socketio import SocketIO, join_room, leave_room, send, emit
+from flask_socketio import SocketIO, join_room, leave_room, send, emit, disconnect
 
 import settings
 import db
@@ -115,40 +115,47 @@ def chat(id):
     messages = DB.get_chat_messages(id)
     return render_template('chat.html', chat_id=chat_id, messages=messages, user=user_id, other_user=other_username)
 
+# Ensure authentication before handling socketio messages
+def authenticated_only(f):
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        if not 'logged_in' not in session or 'user' not in session:
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapped
 
 @socketio.on('joined', namespace='/chat')
+@authenticated_only
 def joined(data):
     """Sent by clients when they enter a chat.
     A status message is broadcast to all people in the chat."""
-    if 'logged_in' not in session or 'user' not in session:
-        return redirect(url_for('login'))
     username = session['user']['username']
     chat_id = session['chat_id']
     if username is None or chat_id is None:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     chat = DB.get_chat(chat_id)
     if username != chat['user1_name'] and username != chat['user2_name']:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     join_room(chat_id)
     emit('username', {'username': username}, room=request.sid)
     emit('status', {'msg': username + ' has entered the room.'}, room=chat_id)
 
 
 @socketio.on('new_message', namespace='/chat')
+@authenticated_only
 def new_message(data):
     """Sent by a client when the user entered a new message.
     The message is sent to both people in the chat."""
-    if 'logged_in' not in session or 'user' not in session:
-        return redirect(url_for('login'))
     message = data['msg']
     user_id = session['user']['id']
     username = session['user']['username']
     chat_id = session['chat_id']
     if None in [message, user_id, chat_id]:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     chat = DB.get_chat(chat_id)
     if username != chat['user1_name'] and username != chat['user2_name']:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     # Get the 'other' user in the chat
     other_userid = chat['user1_id']
     other_username = chat['user1_name']
@@ -159,7 +166,7 @@ def new_message(data):
     msg_id = DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
     msg = DB.get_message(msg_id)
     if len(msg) != 1:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     msg = msg[0]
     # TODO: Check that this does not give error?
     DB.update_chat_last_message_time(chat_id, msg['dt'])
@@ -172,20 +179,19 @@ def new_message(data):
 
 
 @socketio.on('left', namespace='/chat')
+@authenticated_only
 def left(data):
     """Sent by clients when they leave a chat.
     A status message is broadcast to both people in the chat."""
-    if 'logged_in' not in session or 'user' not in session:
-        return redirect(url_for('login'))
     chat_id = session['chat_id']
     if chat_id is None:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     chat = DB.get_chat(chat_id)
     username = session['user']['username']
     if chat is None or username is None:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     if username != chat['user1_name'] and username != chat['user2_name']:
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return False
     leave_room(session['chat_id'])
     session['chat_id'] = None
 
