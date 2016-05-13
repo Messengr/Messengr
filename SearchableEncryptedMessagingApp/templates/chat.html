@@ -2,12 +2,22 @@
 
 {% block title %}Test Message App | Home{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/chat.js') }}"></script>
+{% endblock%}
+
 {% block content %}
 
     <div class="container">
 
-        <h2>Messages</h2>
-        <div class="row chat-window col-xs-5 col-md-12" id="chat_window_1" style="margin-left:10px;">
+        <div class="row" style="margin-left:10px;">
+            <h2>Messages</h2>
+            <button class="btn btn-primary btn-sm" id="leaveChat">Leave chat</button>
+        </div>
+
+        <br><br>
+
+        <div class="row chat-window col-xs-5 col-md-12" style="margin-left:10px;">
             <div class="col-xs-12 col-md-12">
                 <div class="panel panel-default">
                     <div class="panel-heading top-bar">
@@ -16,7 +26,7 @@
 
                         </div>
                     </div>
-                    <div class="panel-body msg_container_base">
+                    <div class="panel-body msg_container_base" id="chat_base">
                         {% if messages %}
                             {% for m in messages %}
                                 {% if m.sender_id == user %}
@@ -40,7 +50,7 @@
                                         <div class="col-md-10 col-xs-10">
                                             <div class="messages msg_receive">
                                                 <p class="text-warning">{{ m.message }}</p>
-                                                <time datetime="{ m.dt }}" class="">{{ m.sender_username }} • {{ m.dt }}</time>
+                                                <time datetime="{{ m.dt }}" class="">{{ m.sender_username }} • {{ m.dt }}</time>
                                             </div>
                                         </div>
                                     </div>
@@ -51,13 +61,11 @@
                         {% endif %}
                     </div>
                     <div class="panel-footer">
-                        <form action="{{ url_for('chat', id=chat_id) }}" method="post">
-                            <div class="input-group">
-                                <input id="message" name="message" type="text" class="form-control input-sm chat_input" placeholder="Write your message here..."> <span class="input-group-btn">
-                                <button class="btn btn-primary btn-sm" type="submit" id="btn-chat">Send</button>
-                                </span>
-                            </div>
-                        </form>
+                        <div class="input-group">
+                            <input id="message" name="message" type="text" class="form-control input-sm chat_input" placeholder="Write your message here..."> <span class="input-group-btn">
+                            <button class="btn btn-primary btn-sm" type="submit" id="send_message">Send</button>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
