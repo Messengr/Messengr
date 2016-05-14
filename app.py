@@ -9,8 +9,7 @@ from flask_socketio import SocketIO, join_room, leave_room, send, emit, disconne
 
 
 app = Flask(__name__)
-#app.config.from_object(os.environ['APP_SETTINGS'])
-app.config.from_object(config.DevelopmentConfig)
+app.config.from_object(os.environ['APP_SETTINGS'])
 socketio = SocketIO(app)
 
 # Import models
