@@ -1,20 +1,21 @@
 import os
-import sqlite3
-import bcrypt
 from string import ascii_lowercase
 import functools
 
+import config
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
+from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO, join_room, leave_room, send, emit, disconnect
 
-import settings
-import db
 
 app = Flask(__name__)
-app.config.from_object(settings)
+#app.config.from_object(os.environ['APP_SETTINGS'])
+app.config.from_object(config.DevelopmentConfig)
 socketio = SocketIO(app)
 
-DB = db.setup(app.config['DATABASE'])
+# Import models
+DB = SQLAlchemy(app)
+import models
 
 # Usernames must contain only letters (a-z), numbers (0-9), dashes (-), underscores (_)
 VALID_USERNAME_CHARS = set(['-', '_'] + [str(i) for i in xrange(0,10)] + list(ascii_lowercase))
@@ -34,16 +35,18 @@ def home():
     if request.method == 'POST':
         receiver_username = request.form['receiver']
         # Make sure that the receiver in this new chat exists
-        if not DB.check_if_user_exists(receiver_username):
-            return render_template('index.html', chats=DB.get_chats_for_user(user_id), username=session['user']['username'], error="This user does not exist.")
+        if not models.check_if_user_exists(receiver_username):
+            chats = [chat.to_dict() for chat in models.get_chats_for_user(user_id)]
+            return render_template('index.html', chats=chats, username=username, error="This user does not exist.")
         # Find receiver user and create a new chat
-        receiver = DB.find_user_by_name(receiver_username)
-        chat_id = DB.create_chat(user_id, username, receiver['id'], receiver['username'])
+        receiver = models.find_user_by_name(receiver_username)
+        chat_id = models.create_chat(user_id, username, receiver.id, receiver.username)
         # Redirect to newly created chat
         return redirect(url_for('chat', id=chat_id))
 
     # Deliver home page
-    return render_template('index.html', chats=DB.get_chats_for_user(user_id), username=session['user']['username'])
+    chats = [chat.to_dict() for chat in models.get_chats_for_user(user_id)]
+    return render_template('index.html', chats=chats, username=username)
 
 
 @app.route('/about')
@@ -60,9 +63,9 @@ def login():
     # Attempt to login a user
     if request.method == 'POST':
         # Check that entered username/password pair is valid
-        if request.form['username'] and request.form['password'] and DB.user_authenticated(request.form['username'], request.form['password']):
+        if request.form['username'] and request.form['password'] and models.user_authenticated(request.form['username'], request.form['password']):
             session['logged_in'] = True
-            session['user'] = DB.find_user_by_name(request.form['username'])
+            session['user'] = models.find_user_by_name(request.form['username']).to_dict()
             return redirect(url_for('home'))
         else:
             error = 'Invalid username and/or password'
@@ -90,27 +93,22 @@ def create_user():
         error = "Invalid username. Must contain only letters (a-z), numbers (0-9), dashes (-), underscores (_)."
     if len(password) < 8:
         error = "Invalid password. Must be at least 8 characters."
-    if DB.check_if_user_exists(username):
+    if models.check_if_user_exists(username):
         error = "Username already taken."
     
-    # Valid username/password pair
+    # Invalid username or password
     if error is not None:
         return render_template('login.html', error=error)
 
-    # Generate salt
-    salt = bcrypt.gensalt()
-    # Hash given password using salt
-    pass_hash = bcrypt.hashpw(password.encode('utf-8'), salt)
-
     # Add new user to database
-    no_err = DB.add_user_to_db(username, pass_hash, public_key)
-    if no_err is None:
+    id = models.add_user_to_db(username, password, public_key)
+    if id is None:
         # Database error
         return jsonify({'error': "Unexpected error."})
 
     # Redirect new user to home page
     session['logged_in'] = True
-    session['user'] = DB.find_user_by_name(username)
+    session['user'] = models.find_user_by_name(username).to_dict()
     return redirect(url_for('home'))
 
 
@@ -131,19 +129,19 @@ def chat(id):
     user_id = session['user']['id']
     username = session['user']['username']
     # Check that this chat exists and user is valid participant
-    chat = DB.get_chat(id)
-    if not chat or (user_id != chat['user1_id'] and user_id != chat['user2_id']):
+    chat = models.get_chat(id)
+    if not chat or (user_id != chat.user1_id and user_id != chat.user2_id):
         return make_response(jsonify({'error': 'Not found'}), 404)
-    chat_id = chat['id']
+    chat_id = chat.id
     session['chat_id'] = chat_id
     # Get the 'other' user in the chat
-    other_userid = chat['user1_id']
-    other_username = chat['user1_name']
-    if user_id == chat['user1_id']:
-        other_userid = chat['user2_id']
-        other_username = chat['user2_name']
+    other_userid = chat.user1_id
+    other_username = chat.user1_name
+    if user_id == chat.user1_id:
+        other_userid = chat.user2_id
+        other_username = chat.user2_name
     # Get messages for this chat and render the chat view
-    messages = DB.get_chat_messages(id)
+    messages = [message.to_dict() for message in models.get_chat_messages(id)]
     return render_template('chat.html', chat_id=chat_id, messages=messages, user=user_id, other_user=other_username)
 
 # Ensure authentication before handling socketio messages
@@ -167,9 +165,9 @@ def joined(data):
     # Safety check
     if username is None or chat_id is None:
         return False
-    chat = DB.get_chat(chat_id)
+    chat = models.get_chat(chat_id)
     # Check that user is valid participant in chat
-    if username != chat['user1_name'] and username != chat['user2_name']:
+    if username != chat.user1_name and username != chat.user2_name:
         return False
     # Join chat room
     join_room(chat_id)
@@ -190,32 +188,27 @@ def new_message(data):
     # Safety check
     if None in [message, user_id, chat_id]:
         return False
-    chat = DB.get_chat(chat_id)
+    chat = models.get_chat(chat_id)
     # Check that user is valid participant in chat
-    if username != chat['user1_name'] and username != chat['user2_name']:
+    if username != chat.user1_name and username != chat.user2_name:
         return False
     # Get the 'other' user in the chat
-    other_userid = chat['user1_id']
-    other_username = chat['user1_name']
-    if user_id == chat['user1_id']:
-        other_userid = chat['user2_id']
-        other_username = chat['user2_name']
+    other_userid = chat.user1_id
+    other_username = chat.user1_name
+    if user_id == chat.user1_id:
+        other_userid = chat.user2_id
+        other_username = chat.user2_name
     # Insert message into DB
-    msg_id = DB.add_message(message, user_id, username, other_userid, other_username, chat_id)
-    msg = DB.get_message(msg_id)
-    if len(msg) != 1:
-        # Database error
-        return False
-    msg = msg[0]
+    msg = models.add_message(message, user_id, username, other_userid, other_username, chat_id)
     # TODO: Check that this does not give error?
     # Update the chat's last message time
-    DB.update_chat_last_message_time(chat_id, msg['dt'])
+    models.update_chat_last_message_time(chat_id, msg.dt)
     # Send message back to client
     emit('message', {
-        'sender': msg['sender_username'],
-        'receiver': msg['receiver_username'],
-        'msg': msg['message'],
-        'dt': msg['dt']
+        'sender': msg.sender_username,
+        'receiver': msg.receiver_username,
+        'msg': msg.text,
+        'dt': msg.dt.isoformat()
     }, room=chat_id)
 
 
@@ -229,13 +222,13 @@ def left(data):
     if chat_id is None:
         return False
     # Fetch chat from database
-    chat = DB.get_chat(chat_id)
+    chat = models.get_chat(chat_id)
     username = session['user']['username']
     # Safety check
     if chat is None or username is None:
         return False
     # Check that user is valid participant in chat
-    if username != chat['user1_name'] and username != chat['user2_name']:
+    if username != chat.user1_name and username != chat.user2_name:
         return False
     # Leave room and reset session variable for chat id
     leave_room(session['chat_id'])
@@ -243,26 +236,6 @@ def left(data):
 
 
 if __name__ == '__main__':
-
-    # Test whether the database exists; if not, create it and create the table
-    if not os.path.exists(app.config['DATABASE']):
-        try:
-            # Connect to DB and initialize, create tables
-            conn = sqlite3.connect(app.config['DATABASE'])
-
-            # Absolute path needed for testing environment
-            sql_path = os.path.join(app.config['APP_ROOT'], 'db_init.sql')
-            cmd = open(sql_path, 'r').read()
-            c = conn.cursor()
-            c.executescript(cmd)
-            conn.commit()
-            conn.close()
-        except IOError:
-            print "Couldn't initialize the database, exiting..."
-            raise
-        except sqlite3.OperationalError:
-            print "Couldn't execute the SQL, exiting..."
-            raise
 
     # Run app
     socketio.run(app)
