@@ -59,6 +59,12 @@ $(document).ready(function(){
             // Empty message, do not send
             return;
         }
+        if (message.length > 128) {
+            // Message must be at most 128 characters
+            // Clear message box
+            $('#message').val('');
+            return;
+        }
         // Clear message box
         $('#message').val('');
         // Send message to server

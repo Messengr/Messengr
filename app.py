@@ -187,7 +187,7 @@ def new_message(data):
     username = session['user']['username']
     chat_id = session['chat_id']
     # Safety check
-    if None in [message, user_id, chat_id]:
+    if None in [message, user_id, chat_id] or len(message) == 0 or len(message) > 128:
         return False
     chat = models.get_chat(chat_id)
     # Check that user is valid participant in chat
