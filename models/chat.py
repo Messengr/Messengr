@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Chat(DB.Model):
-    __tablename__ = 'chat'
+    __tablename__ = 'chats'
 
     id = DB.Column(DB.Integer, primary_key=True)
     dt = DB.Column(DB.DateTime)

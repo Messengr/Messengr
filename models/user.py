@@ -3,7 +3,7 @@ from datetime import datetime
 import bcrypt
 
 class User(DB.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     id = DB.Column(DB.Integer, primary_key=True)
     dt = DB.Column(DB.DateTime)

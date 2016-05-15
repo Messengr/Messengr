@@ -2,7 +2,7 @@ from app import DB
 from datetime import datetime
 
 class Message(DB.Model):
-    __tablename__ = 'message'
+    __tablename__ = 'messages'
 
     id = DB.Column(DB.Integer, primary_key=True)
     dt = DB.Column(DB.DateTime)
