@@ -22,7 +22,7 @@ import models
 VALID_USERNAME_CHARS = set(['-', '_'] + [str(i) for i in xrange(0,10)] + list(ascii_lowercase))
 
 # Standard routing (server-side rendered pages)
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def home():
     # Check if user is logged in
     if 'logged_in' in session and 'user' in session:
@@ -32,24 +32,26 @@ def home():
         # User is not logged in, redirect to login page
         return redirect(url_for('login'))
 
-    # Request to create a new chat
-    if request.method == 'POST':
-        receiver_username = request.form['receiver']
-        # Make sure that the receiver in this new chat exists
-        if not models.check_if_user_exists(receiver_username):
-            chats = [chat.to_dict() for chat in models.get_chats_for_user(user_id)]
-            return render_template('index.html', chats=chats, username=username, error="This user does not exist.")
-        # Find receiver user and create a new chat
-        receiver = models.find_user_by_name(receiver_username)
-        
-        chat_id = models.create_chat(user_id, username, receiver.id, receiver.username)
-        # Redirect to newly created chat
-        return redirect(url_for('chat', id=chat_id))
-
     # Deliver home page
     chats = [chat.to_dict() for chat in models.get_chats_for_user(user_id)]
     return render_template('index.html', chats=chats, username=username)
 
+@app.route('/public_key')
+def get_public_key():
+    # Check if user is logged in
+    if 'logged_in' in session and 'user' in session:
+        sender_public_key = session['user']['public_key']
+    else:
+        # User is not logged in, return error message
+        return jsonify({'error': "Unauthorized request."})
+    # Get receiver_username from request
+    receiver_username = request.args.get('receiver_username', '')
+    # Make sure that the receiver exists
+    if not models.check_if_user_exists(receiver_username):
+        return jsonify({"error": "This user does not exist."})
+    # Find receiver user
+    receiver = models.find_user_by_name(receiver_username)
+    return jsonify(sender_public_key=sender_public_key, receiver_public_key=receiver.public_key)
 
 @app.route('/about')
 def about():
@@ -122,6 +124,26 @@ def logout():
     session.pop('chat_id', None)
     return redirect(url_for('login'))
 
+@app.route('/chat/create', methods=['POST'])
+def create_chat():
+    # Check if user is logged in
+    if 'logged_in' in session and 'user' in session:
+        user_id = session['user']['id']
+        username = session['user']['username']
+        sender_public_key = session['user']['public_key']
+    else:
+        # User is not logged in, return error message
+        return jsonify({'error': "Unauthorized request."})
+    sk_sym_1 = request.form.get('sk_sym_1', '')
+    sk_sym_2 = request.form.get('sk_sym_2', '')
+    receiver_username = request.form.get('receiver_username', '')
+    receiver_public_key = request.form.get('receiver_public_key', '')
+    receiver = models.find_user_by_name(receiver_username)
+    if (receiver is None) or (receiver.public_key != receiver_public_key):
+        return jsonify({'error': "Unexpected error."})
+    # TODO: Store sk_sym_1 and sk_sym_2
+    chat_id = models.create_chat(user_id, username, sk_sym_1, receiver.id, receiver.username, sk_sym_2)
+    return jsonify(chat_id=chat_id)
 
 @app.route('/chat/<int:id>')
 def chat(id):
