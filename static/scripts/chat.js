@@ -18,7 +18,7 @@ $(document).ready(function(){
     var socket;
     var current_username;
 
-    socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
+    socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
         socket.emit('joined', {});
     });
@@ -33,9 +33,18 @@ $(document).ready(function(){
     // Display new message
     socket.on('message', function(data) {
         var msg = data['msg'];
+        console.log("received");
+        console.log(msg);
         var sender = data['sender'];
         var receiver = data['receiver'];
         var dt = data['dt'];
+        
+        if (sjcl != null) {
+            msg = JSON.parse(msg);
+            symmetric_key = "abc";
+            msg = sjcl.decrypt(symmetric_key, msg);
+        }
+        
         if (current_username == sender) {
             $("#chat_base").append(newSenderMessage(msg, sender, dt));
         }
@@ -65,9 +74,31 @@ $(document).ready(function(){
             $('#message').val('');
             return;
         }
+        
+        // Initialize encryption keys
+        var recepient_pk_serialized = $('#receiver_pk').text();
+        var sk_serialized = localStorage.getItem("secret_key");
+        var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
+
+        if (sk_serialized == null || recepient_pk_serialized == null || symmetric_key == null) {
+            console.log("Issue retrieving keys.");
+        } else {
+
+            var recepient_pk = new sjcl.ecc.elGamal.publicKey(
+                sjcl.ecc.curves.c256,
+                sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(recepient_pk_serialized))
+            );
+
+            var encrypted_message = sjcl.encrypt(symmetric_key, message);
+            message = JSON.stringify(encrypted_message);
+            console.log(encrypted_message);
+        }
+        
         // Clear message box
         $('#message').val('');
         // Send message to server
+        console.log("sent");
+        console.log(message);
         socket.emit('new_message', {msg: message});
     });
     // Disconnect socket and go to home page when 'Leave Chat' button is clicked
