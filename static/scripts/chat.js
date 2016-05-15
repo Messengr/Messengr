@@ -88,7 +88,7 @@ $(document).ready(function(){
                     "</div>" + 
                     "</div>" +
                     "<div class='col-md-2 col-xs-2 avatar'>" +
-                    "<img src='http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg' height='100' width='100' class='img-responsive'>" +
+                    "<img src='https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=retro' height='100' width='100' class='img-responsive'>" +
                     "</div>" +
                     "</div>";
         return String.format(message, msg, username, dt);
@@ -97,7 +97,7 @@ $(document).ready(function(){
     function newReceiverMessage(msg, username, dt) {
         var message = "<div class='row msg_container base_receive'>" +
                 "<div class='col-md-2 col-xs-2 avatar'>" +
-                "<img src='http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg' height='100' width='100' class='img-responsive'>" +
+                "<img src='https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=retro' height='100' width='100' class='img-responsive'>" +
                 "</div>" +
                 "<div class='col-md-10 col-xs-10'>" +
                 "<div class='messages msg_receive'>" +
