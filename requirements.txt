@@ -4,6 +4,7 @@ eventlet==0.19.0
 Flask==0.10.1
 Flask-SocketIO==2.2
 Flask-SQLAlchemy==2.1
+Flask-SSLify==0.1.5
 greenlet==0.4.9
 gunicorn==18.0
 itsdangerous==0.24
