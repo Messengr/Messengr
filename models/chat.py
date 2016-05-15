@@ -7,10 +7,10 @@ class Chat(DB.Model):
 
     id = DB.Column(DB.Integer, primary_key=True)
     dt = DB.Column(DB.DateTime)
-    user1_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'))
-    user1_name = DB.Column(DB.String(32), DB.ForeignKey('user.username'))
-    user2_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'))
-    user2_name = DB.Column(DB.String(32), DB.ForeignKey('user.username'))
+    user1_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
+    user1_name = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
+    user2_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
+    user2_name = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
     last_message_dt = DB.Column(DB.DateTime)
 
     def __init__(self, user1_id, user1_name, user2_id, user2_name):

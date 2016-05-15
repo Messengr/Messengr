@@ -7,11 +7,11 @@ class Message(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     dt = DB.Column(DB.DateTime)
     text = DB.Column(DB.String(128))
-    sender_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'))
+    sender_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
     sender_username = DB.Column(DB.String(32))
-    receiver_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'))
+    receiver_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
     receiver_username = DB.Column(DB.String(32))
-    chat_id = DB.Column(DB.Integer, DB.ForeignKey('chat.id'))
+    chat_id = DB.Column(DB.Integer, DB.ForeignKey('chats.id'))
 
     def __init__(self, text, sender_id, sender_username, receiver_id, receiver_username, chat_id):
         self.dt = datetime.utcnow()
