@@ -18,7 +18,7 @@ $(document).ready(function(){
     var socket;
     var current_username;
 
-    socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+    socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
         socket.emit('joined', {});
     });
