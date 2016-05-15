@@ -33,6 +33,7 @@ $(document).ready(function() {
             // Initialize encryption keys
             var recepient_pk_serialized = $('#receiver_pk').text();
             var sk_serialized = localStorage.getItem("secret_key");
+            var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
 
             if (sk_serialized == null || recepient_pk_serialized == null) {
                 console.log("Issue retrieving keys.");
@@ -43,9 +44,6 @@ $(document).ready(function() {
                 sjcl.ecc.curves.c256,
                 sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(recepient_pk_serialized)
             );
-
-            //symmetric_key = sjcl.decrypt(sec, encrypted_symmetric_key);
-            symmetric_key = "abc";
             
             var message = $('#message').val();
             console.log(message);
@@ -55,20 +53,12 @@ $(document).ready(function() {
             return true;
         });
         
-        $(".msg_sent .text-warning").each(function(index, element) {
-            var symmetric_key = "abc";
+        $(".text-warning").each(function(index, element) {
+            var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
             var enc_message = $(this).text();
             var pt = sjcl.decrypt(symmetric_key, enc_message);
             $(this).text = pt;
         });
-        
-        $(".msg_receive .text-warning").each(function(index, element) {
-            var symmetric_key = "abc";
-            var enc_message = $(this).text();
-            var pt = sjcl.decrypt(symmetric_key, enc_message);
-            $(this).text = pt;
-        });
-        
         
     });
 
