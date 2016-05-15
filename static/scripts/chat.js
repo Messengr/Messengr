@@ -12,6 +12,8 @@ if (!String.format) {
 }
 
 $(document).ready(function(){
+    var testEncryption = true;
+    
     // Scroll to bottom
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
 
@@ -33,17 +35,26 @@ $(document).ready(function(){
     // Display new message
     socket.on('message', function(data) {
         var msg = data['msg'];
-        console.log("received");
-        console.log(msg);
         var sender = data['sender'];
         var receiver = data['receiver'];
         var dt = data['dt'];
         
-        if (sjcl != null) {
-            msg = JSON.parse(msg);
-            symmetric_key = "abc";
-            msg = sjcl.decrypt(symmetric_key, msg);
+        if (testEncryption) {
+            console.log("Received: ");
+            console.log(msg);
+            encrypted_msg = JSON.parse(msg);
+            encrypted_msg.v = 1;
+            encrypted_msg.iter = 1000;
+            encrypted_msg.ks = 128;
+            encrypted_msg.ts = 64;
+            encrypted_msg.mode = "ccm";
+            encrypted_msg.adata = "";
+            encrypted_msg.cipher = "aes";
+            console.log(encrypted_msg);
+            decrypted_msg = sjcl.decrypt("abc", encrypted_msg);
+            msg = decrypted_msg;
         }
+
         
         if (current_username == sender) {
             $("#chat_base").append(newSenderMessage(msg, sender, dt));
@@ -76,28 +87,43 @@ $(document).ready(function(){
         }
         
         // Initialize encryption keys
-        var recepient_pk_serialized = $('#receiver_pk').text();
-        var sk_serialized = localStorage.getItem("secret_key");
-        var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
-
-        if (sk_serialized == null || recepient_pk_serialized == null || symmetric_key == null) {
-            console.log("Issue retrieving keys.");
-        } else {
-
-            var recepient_pk = new sjcl.ecc.elGamal.publicKey(
-                sjcl.ecc.curves.c256,
-                sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(recepient_pk_serialized))
-            );
-
-            var encrypted_message = sjcl.encrypt(symmetric_key, message);
-            message = JSON.stringify(encrypted_message);
-            console.log(encrypted_message);
+//        var recepient_pk_serialized = $('#receiver_pk').text();
+//        var sk_serialized = localStorage.getItem("secret_key");
+//        var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
+//
+//        if (sk_serialized == null || recepient_pk_serialized == null || symmetric_key == null) {
+//            console.log("Issue retrieving keys.");
+//        } else {
+//
+//            var recepient_pk = new sjcl.ecc.elGamal.publicKey(
+//                sjcl.ecc.curves.c256,
+//                sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(recepient_pk_serialized))
+//            );
+//
+//            var encrypted_message = sjcl.encrypt(symmetric_key, message);
+//            message = JSON.stringify(encrypted_message);
+//            console.log(message);
+//        }
+        if (testEncryption) {
+            var enc_message = sjcl.encrypt("abc", message);
+            var enc_object = JSON.parse(enc_message);
+            console.log(enc_object);
+            var new_object = {"iv":enc_object.iv, "salt":enc_object.salt, "ct":enc_object.ct};
+            message = JSON.stringify(new_object);
+            
+            encrypted_msg.v = 1;
+            encrypted_msg.iter = 1000;
+            encrypted_msg.ks = 128;
+            encrypted_msg.ts = 64;
+            encrypted_msg.mode = "ccm";
+            encrypted_msg.adata = "";
+            encrypted_msg.cipher = "aes";
+            console.log(message);            
         }
-        
         // Clear message box
         $('#message').val('');
         // Send message to server
-        console.log("sent");
+        console.log("Message sent:");
         console.log(message);
         socket.emit('new_message', {msg: message});
     });
@@ -111,34 +137,9 @@ $(document).ready(function(){
     });
 
     // TODO: Tony Crypto stuff...
-    $('#send_message').click(function(eventObj) {
-        // Initialize encryption keys
-        var recepient_pk_serialized = $('#receiver_pk').text();
-        var sk_serialized = localStorage.getItem("secret_key");
-        var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
-
-        if (sk_serialized == null || recepient_pk_serialized == null || symmetric_key == null) {
-            console.log("Issue retrieving keys.");
-            return false;
-        }
-        
-        var recepient_pk = new sjcl.ecc.elGamal.publicKey(
-            sjcl.ecc.curves.c256,
-            sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(recepient_pk_serialized))
-        );
-        
-        var message = $('#message').val();
-        console.log(message);
-        var encrypted_message = sjcl.encrypt(symmetric_key, message);
-        $('#message').val(encrypted_message);
-        console.log(encrypted_message);
-        return true;
-    });
-
-    // TODO: Tony Crypto stuff...
     $(".text-warning").each(function(index, element) {
         var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
-        var enc_message = $(this).text();
+        var enc_message = JSON.parse($(this).text());
         var pt = sjcl.decrypt(symmetric_key, enc_message);
         $(this).text = pt;
     });
