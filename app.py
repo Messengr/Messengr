@@ -41,7 +41,9 @@ def home():
             return render_template('index.html', chats=chats, username=username, error="This user does not exist.")
         # Find receiver user and create a new chat
         receiver = models.find_user_by_name(receiver_username)
-        chat_id = models.create_chat(user_id, username, receiver.id, receiver.username)
+        
+        symmetric_key = "abc" # TODO: Replace with actual key generation.
+        chat_id = models.create_chat(user_id, username, receiver.id, receiver.username, symmetric_key)
         # Redirect to newly created chat
         return redirect(url_for('chat', id=chat_id))
 
