@@ -2,6 +2,10 @@
 
 {% block title %}Test Message App | Login{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/login.js') }}"></script>
+{% endblock%}
+
 {% block content %}
 
     <div class="container">

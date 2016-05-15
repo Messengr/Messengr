@@ -138,10 +138,11 @@ def create_chat():
     sk_sym_2 = request.form.get('sk_sym_2', '')
     receiver_username = request.form.get('receiver_username', '')
     receiver_public_key = request.form.get('receiver_public_key', '')
+    if '' in [sk_sym_1, sk_sym_2, receiver_username, receiver_public_key]:
+        return jsonify({'error': "Unable to create chat."})
     receiver = models.find_user_by_name(receiver_username)
     if (receiver is None) or (receiver.public_key != receiver_public_key):
         return jsonify({'error': "Unexpected error."})
-    # TODO: Store sk_sym_1 and sk_sym_2
     chat_id = models.create_chat(user_id, username, sk_sym_1, receiver.id, receiver.username, sk_sym_2)
     return jsonify(chat_id=chat_id)
 
