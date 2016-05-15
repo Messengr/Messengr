@@ -12,7 +12,7 @@ from flask_sslify import SSLify
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 socketio = SocketIO(app)
-sslify = SSLify(app)
+#sslify = SSLify(app)
 
 # Import models
 DB = SQLAlchemy(app)
@@ -42,8 +42,7 @@ def home():
         # Find receiver user and create a new chat
         receiver = models.find_user_by_name(receiver_username)
         
-        symmetric_key = "abc" # TODO: Replace with actual key generation.
-        chat_id = models.create_chat(user_id, username, receiver.id, receiver.username, symmetric_key)
+        chat_id = models.create_chat(user_id, username, receiver.id, receiver.username)
         # Redirect to newly created chat
         return redirect(url_for('chat', id=chat_id))
 
@@ -241,4 +240,4 @@ def left(data):
 if __name__ == '__main__':
 
     # Run app
-    socketio.run(app)
+    socketio.run(app, debug=True)
