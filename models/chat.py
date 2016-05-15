@@ -54,7 +54,7 @@ def create_chat(user1_id, user1_name, user2_id, user2_name):
 
 def get_chats_for_user(user_id):
     # Get all chats where given user is a participant
-    return Chat.query.filter((Chat.user1_id == user_id) | (Chat.user2_id == user_id)).all()
+    return Chat.query.filter((Chat.user1_id == user_id) | (Chat.user2_id == user_id)).order_by(Chat.last_message_dt.desc()).all()
 
 def update_chat_last_message_time(chat_id, last_message_dt):
     # Find chat with given id
