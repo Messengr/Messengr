@@ -35,7 +35,7 @@ $(document).ready(function() {
             var sk_serialized = localStorage.getItem("secret_key");
             var symmetric_key = "abc"; // TODO: Replace with actual symmetric key.
 
-            if (sk_serialized == null || recepient_pk_serialized == null) {
+            if (sk_serialized == null || recepient_pk_serialized == null || symmetric_key == null) {
                 console.log("Issue retrieving keys.");
                 return false;
             }
