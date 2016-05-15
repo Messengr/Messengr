@@ -13,6 +13,7 @@ Install the pre-requisites. You can install them either globally or in [a virtua
 ```
 pip install -r requirements.txt
 ```
+Set the environment variable `APP_SETTINGS` to either config.DevelopmentConfig, which will use the database at `/tmp/test.db` (you will have to create this database first), or config.ProductionConfig, which will use the database with URL set to the environment variable `DATABASE_URL`, which is unset by default.
 
 ## License
 
