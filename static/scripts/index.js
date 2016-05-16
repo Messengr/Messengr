@@ -22,6 +22,7 @@ $(document).ready(function(){
             // Invalid username, do not send
             return;
         }
+        // Ask for public keys
         $.getJSON($SCRIPT_ROOT + '/public_key', {
             'receiver_username': receiver_username
         }, function(data) {
@@ -43,8 +44,9 @@ $(document).ready(function(){
                 sjcl.codec.base64.toBits(data.receiver_public_key)
             );
 
-            // TODO: Generate secret symmetric key
-            var secret_sym_key = "blah";
+            // Generate symmetric key (8 4-byte words = 256 bits)
+            // 10 is maximum paranoia level
+            var secret_sym_key = sjcl.random.randomWords(8, 10);
             // Encrypt it using my public key
             var sk_sym_1 = sjcl.encrypt(my_public_key, secret_sym_key);
             // Encrypt it using receiver's public key
