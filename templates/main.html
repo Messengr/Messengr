@@ -36,7 +36,7 @@
                             <span class="icon-bar"></span>
                         </button>
                         {% if not 'user' in session %}
-                            <a class="navbar-brand" href="{{ url_for('home') }}">Test Message App</a>
+                            <a class="navbar-brand" href="{{ url_for('home') }}">Messengr</a>
                         {% else %}
                             <a class="navbar-brand" href="{{ url_for('home') }}">Hi, {{session['user']['username']}}!</a>
                         {% endif %}
