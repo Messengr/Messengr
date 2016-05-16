@@ -147,6 +147,9 @@ def create_chat():
     if (receiver is None) or (receiver.public_key != receiver_public_key):
         return jsonify({'error': "Unexpected error."})
     chat_id = models.create_chat(user_id, username, sk_sym_1, receiver.id, receiver.username, sk_sym_2)
+    # Safety check
+    if chat_id is None:
+        return jsonify({'error': "Unable to create chat."})
     return jsonify(chat_id=chat_id)
 
 @app.route('/chat/<int:id>')
@@ -230,7 +233,9 @@ def new_message(data):
         other_username = chat.user2_name
     # Insert message into DB
     msg = models.add_message(message, user_id, username, other_userid, other_username, chat_id)
-    # TODO: Check that this does not give error?
+    # Safety check
+    if msg is None:
+        return False
     # Update the chat's last message time
     models.update_chat_last_message_time(chat_id, msg.dt)
     # Send message back to client
