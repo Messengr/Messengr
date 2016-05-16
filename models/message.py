@@ -8,9 +8,9 @@ class Message(DB.Model):
     dt = DB.Column(DB.DateTime)
     text = DB.Column(DB.String(500))
     sender_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
-    sender_username = DB.Column(DB.String(32))
+    sender_username = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
     receiver_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
-    receiver_username = DB.Column(DB.String(32))
+    receiver_username = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
     chat_id = DB.Column(DB.Integer, DB.ForeignKey('chats.id'))
 
     def __init__(self, text, sender_id, sender_username, receiver_id, receiver_username, chat_id):
@@ -43,6 +43,9 @@ def get_message(id):
     return Message.query.get(id)
 
 def add_message(text, sender_id, sender_username, receiver_id, receiver_username, chat_id):
+    # Safety check
+    if len(text) > 500 or len(sender_username) > 32 or len(receiver_username) > 32:
+        return None
     # Create Message instance
     new_message = Message(text, sender_id, sender_username, receiver_id, receiver_username, chat_id)
     # Insert to table

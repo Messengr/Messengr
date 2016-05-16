@@ -91,12 +91,12 @@ def create_user():
     error = None
     if None in [username, password, public_key]:
         error  = "Request missing a field!"
-    if len(username) == 0 or len(username) > 16:
-        error = "Invalid username. Must be nonempty and contain at most 16 characters."
+    if len(username) == 0 or len(username) > 32:
+        error = "Invalid username. Must be nonempty and contain at most 32 characters."
     if len([c for c in username if c.lower() not in VALID_USERNAME_CHARS]) > 0:
         error = "Invalid username. Must contain only letters (a-z), numbers (0-9), dashes (-), underscores (_)."
-    if len(password) < 8:
-        error = "Invalid password. Must be at least 8 characters."
+    if len(password) < 8 or len(password) > 128:
+        error = "Invalid password. Must be at least 8 characters and at most 128 characters."
     if models.check_if_user_exists(username):
         error = "Username already taken."
     
@@ -138,12 +138,18 @@ def create_chat():
     sk_sym_2 = request.form.get('sk_sym_2', '')
     receiver_username = request.form.get('receiver_username', '')
     receiver_public_key = request.form.get('receiver_public_key', '')
+    # Safety check
+    if (len(username) > 32) or (len(receiver_username) > 32) or (len(sk_sym_1) > 500) or (len(sk_sym_2) > 500):
+        return jsonify({'error': "Unable to create chat."})
     if '' in [sk_sym_1, sk_sym_2, receiver_username, receiver_public_key]:
         return jsonify({'error': "Unable to create chat."})
     receiver = models.find_user_by_name(receiver_username)
     if (receiver is None) or (receiver.public_key != receiver_public_key):
         return jsonify({'error': "Unexpected error."})
     chat_id = models.create_chat(user_id, username, sk_sym_1, receiver.id, receiver.username, sk_sym_2)
+    # Safety check
+    if chat_id is None:
+        return jsonify({'error': "Unable to create chat."})
     return jsonify(chat_id=chat_id)
 
 @app.route('/chat/<int:id>')
@@ -227,7 +233,9 @@ def new_message(data):
         other_username = chat.user2_name
     # Insert message into DB
     msg = models.add_message(message, user_id, username, other_userid, other_username, chat_id)
-    # TODO: Check that this does not give error?
+    # Safety check
+    if msg is None:
+        return False
     # Update the chat's last message time
     models.update_chat_last_message_time(chat_id, msg.dt)
     # Send message back to client
