@@ -50,6 +50,9 @@ def check_if_chat_exists(id):
     return (get_chat(id) is not None)
 
 def create_chat(user1_id, user1_name, user1_sk_sym, user2_id, user2_name, user2_sk_sym):
+    # Safety check
+    if len(user1_name) > 32 or len(user2_name) > 32 or len(user1_sk_sym) > 500 or len(user2_sk_sym) > 500:
+        return None
     # Create Chat instance
     new_chat = Chat(user1_id, user1_name, user1_sk_sym, user2_id, user2_name, user2_sk_sym)
     # Insert into table
