@@ -6,7 +6,7 @@ class Message(DB.Model):
 
     id = DB.Column(DB.Integer, primary_key=True)
     dt = DB.Column(DB.DateTime)
-    text = DB.Column(DB.String(128))
+    text = DB.Column(DB.String(500))
     sender_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
     sender_username = DB.Column(DB.String(32))
     receiver_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))

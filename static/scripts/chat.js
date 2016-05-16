@@ -17,6 +17,7 @@ $(document).ready(function(){
 
     var socket;
     var current_username;
+    var symmetric_key;
 
     socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
@@ -36,6 +37,12 @@ $(document).ready(function(){
         var sender = data['sender'];
         var receiver = data['receiver'];
         var dt = data['dt'];
+        
+        if (!symmetric_key) {
+            computeSymmetricKey();
+        }
+        msg = sjcl.decrypt(symmetric_key, msg);
+        
         if (current_username == sender) {
             $("#chat_base").append(newSenderMessage(msg, sender, dt));
         }
@@ -59,12 +66,17 @@ $(document).ready(function(){
             // Empty message, do not send
             return;
         }
-        if (message.length > 128) {
-            // Message must be at most 128 characters
+        if (message.length > 500) {
+            // Message must be at most 500 characters
             // Clear message box
             $('#message').val('');
             return;
         }
+        if (!symmetric_key) {
+            computeSymmetricKey();
+        }
+        var message = sjcl.encrypt(symmetric_key, message);
+
         // Clear message box
         $('#message').val('');
         // Send message to server
@@ -78,6 +90,25 @@ $(document).ready(function(){
             window.location.href = "/";
         });
     });
+
+    $(".text-warning").each(function(index, element) {
+        if (!symmetric_key) {
+            computeSymmetricKey();
+        }
+        var enc_message = $(this).text();
+        var decrypted_msg = sjcl.decrypt(symmetric_key, enc_message);
+        $(this).text(decrypted_msg);
+    });
+
+    function computeSymmetricKey() {
+        serialized_sk = localStorage.getItem("secret_key");
+        // Unserialized private key:
+        unserialized_sk = new sjcl.ecc.elGamal.secretKey(
+            sjcl.ecc.curves.c256,
+            sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(serialized_sk))
+        );
+        symmetric_key = sjcl.decrypt(unserialized_sk, ENCRYPTED_SYM_KEY);
+    }
 
     function newSenderMessage(msg, username, dt) {
         var message = "<div class='row msg_container base_sent'>" + 

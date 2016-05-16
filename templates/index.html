@@ -1,6 +1,10 @@
 {% extends "main.html" %}
 
-{% block title %}Test Message App | Home{% endblock %}
+{% block title %}Messengr | Home{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/index.js') }}"></script>
+{% endblock%}
 
 {% block content %}
 
@@ -12,13 +16,11 @@
                 {% if error %}
                     <p class="text-danger">Error: {{ error }}</p>
                 {% endif %}
-                <form action="{{ url_for('home') }}" method="post" class="form-inline">
-                    <label class="sr-only" for="newChat">New Chat</label>
-                    <div class="input-group">
-                      <input type="text" class="form-control" id="receiver" name="receiver" placeholder="Receiver username">
-                    </div>
-                  <button type="submit" class="btn btn-success">New Chat</button>
-                </form>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="receiver" name="receiver" placeholder="Receiver username" class="form-control input-sm" maxlength="16"> <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit" id="new_chat">New Chat</button>
+                    </span>
+                </div>
             </div>
         </div>
 

@@ -16,5 +16,5 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = "postgres:////tmp/test.db"
+    SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/test.db"
     SECRET_KEY = 'development-key'
