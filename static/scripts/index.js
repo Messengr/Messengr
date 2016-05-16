@@ -29,9 +29,19 @@ $(document).ready(function(){
                 alert(data.error);
                 return;
             }
-            // Get public keys
-            var my_public_key = data.sender_public_key;
-            var receiver_public_key = data.receiver_public_key;
+            if (!data.sender_public_key || !data.receiver_public_key) {
+                alert("Issue retrieving keys. Try again later.");
+                return;
+            }
+            // Get public keys and unserialize
+            var my_public_key = new sjcl.ecc.elGamal.publicKey(
+                sjcl.ecc.curves.c256,
+                sjcl.codec.base64.toBits(data.sender_public_key)
+            );
+            var receiver_public_key = new sjcl.ecc.elGamal.publicKey(
+                sjcl.ecc.curves.c256,
+                sjcl.codec.base64.toBits(data.receiver_public_key)
+            );
 
             // TODO: Generate secret symmetric key
             var secret_sym_key = "blah";
@@ -44,7 +54,7 @@ $(document).ready(function(){
                 'sk_sym_1': sk_sym_1,
                 'sk_sym_2': sk_sym_2,
                 'receiver_username': receiver_username,
-                'receiver_public_key': receiver_public_key
+                'receiver_public_key': data.receiver_public_key
             };
             $.post($SCRIPT_ROOT + '/chat/create', req_data, function(data) {
                 if (data.error) {

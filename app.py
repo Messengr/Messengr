@@ -12,7 +12,7 @@ from flask_sslify import SSLify
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 socketio = SocketIO(app)
-#sslify = SSLify(app)
+sslify = SSLify(app)
 
 # Import models
 DB = SQLAlchemy(app)
@@ -162,12 +162,14 @@ def chat(id):
     # Get the 'other' user in the chat
     other_userid = chat.user1_id
     other_username = chat.user1_name
+    encrypted_symmetric_key = chat.user2_sk_sym
     if user_id == chat.user1_id:
         other_userid = chat.user2_id
         other_username = chat.user2_name
+        encrypted_symmetric_key = chat.user1_sk_sym
     # Get messages for this chat and render the chat view
     messages = [message.to_dict() for message in models.get_chat_messages(id)]
-    return render_template('chat.html', chat_id=chat_id, messages=messages, user=user_id, other_user=other_username)
+    return render_template('chat.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user=user_id, other_user=other_username)
 
 # Ensure authentication before handling socketio messages
 def authenticated_only(f):
@@ -211,7 +213,7 @@ def new_message(data):
     username = session['user']['username']
     chat_id = session['chat_id']
     # Safety check
-    if None in [message, user_id, chat_id] or len(message) == 0 or len(message) > 128:
+    if None in [message, user_id, chat_id] or len(message) == 0 or len(message) > 500:
         return False
     chat = models.get_chat(chat_id)
     # Check that user is valid participant in chat
