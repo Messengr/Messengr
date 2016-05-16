@@ -46,7 +46,7 @@ $(document).ready(function(){
 
             // Generate symmetric key (8 4-byte words = 256 bits)
             // 10 is maximum paranoia level
-            var secret_sym_key = sjcl.random.randomWords(8, 10);
+            var secret_sym_key = sjcl.codec.base64.fromBits(sjcl.random.randomWords(8, 10));
             // Encrypt it using my public key
             var sk_sym_1 = sjcl.encrypt(my_public_key, secret_sym_key);
             // Encrypt it using receiver's public key
