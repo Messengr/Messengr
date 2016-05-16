@@ -12,8 +12,6 @@ if (!String.format) {
 }
 
 $(document).ready(function(){
-    var testEncryption = true;
-    
     // Scroll to bottom
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
 
@@ -21,7 +19,7 @@ $(document).ready(function(){
     var current_username;
     var symmetric_key;
 
-    socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+    socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
         socket.emit('joined', {});
     });
@@ -40,12 +38,10 @@ $(document).ready(function(){
         var receiver = data['receiver'];
         var dt = data['dt'];
         
-        if (testEncryption) {
-            if (!symmetric_key) {
-                computeSymmetricKey();
-            }
-            msg = sjcl.decrypt(symmetric_key, msg);
+        if (!symmetric_key) {
+            computeSymmetricKey();
         }
+        msg = sjcl.decrypt(symmetric_key, msg);
         
         if (current_username == sender) {
             $("#chat_base").append(newSenderMessage(msg, sender, dt));
@@ -76,12 +72,10 @@ $(document).ready(function(){
             $('#message').val('');
             return;
         }
-        if (testEncryption) {
-            if (!symmetric_key) {
-                computeSymmetricKey();
-            }
-            var message = sjcl.encrypt(symmetric_key, message);
+        if (!symmetric_key) {
+            computeSymmetricKey();
         }
+        var message = sjcl.encrypt(symmetric_key, message);
 
         // Clear message box
         $('#message').val('');
@@ -98,14 +92,12 @@ $(document).ready(function(){
     });
 
     $(".text-warning").each(function(index, element) {
-        if (testEncryption) {
-            if (!symmetric_key) {
-                computeSymmetricKey();
-            }
-            var enc_message = $(this).text();
-            var decrypted_msg = sjcl.decrypt(symmetric_key, enc_message);
-            $(this).text(decrypted_msg);
+        if (!symmetric_key) {
+            computeSymmetricKey();
         }
+        var enc_message = $(this).text();
+        var decrypted_msg = sjcl.decrypt(symmetric_key, enc_message);
+        $(this).text(decrypted_msg);
     });
 
     function computeSymmetricKey() {

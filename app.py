@@ -265,4 +265,4 @@ def left(data):
 if __name__ == '__main__':
 
     # Run app
-    socketio.run(app, debug=True)
+    socketio.run(app)
