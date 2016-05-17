@@ -37,7 +37,7 @@
                                     <div class="row msg_container base_sent">
                                         <div class="col-md-10 col-xs-10">
                                             <div class="messages msg_sent">
-                                                <p class="text-warning">{{ m.text }}</p>
+                                                <p class="text-warning" data-id="{{m.id}}">{{ m.text }}</p>
                                                 <time datetime="{{ m.dt }}" class="">{{ m.sender_username }} • {{ m.dt }}</time>
                                             </div>
                                         </div>
@@ -53,7 +53,7 @@
                                         </div>
                                         <div class="col-md-10 col-xs-10">
                                             <div class="messages msg_receive">
-                                                <p class="text-warning">{{ m.text }}</p>
+                                                <p class="text-warning" data-id="{{m.id}}">{{ m.text }}</p>
                                                 <time datetime="{{ m.dt }}" class="">{{ m.sender_username }} • {{ m.dt }}</time>
                                             </div>
                                         </div>

@@ -18,7 +18,7 @@ $(document).ready(function(){
     var socket;
     var symmetric_key;
 
-    socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
+    socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
         socket.emit('joined', {});
     });
@@ -93,13 +93,14 @@ $(document).ready(function(){
         $(this).text(decrypted_msg);
         
         // Process new messages
-//        message_id = getMessageId; // TODO: Implement getMessageId;
-//        message_key = "message-" + message_id.toString();
-//        processed_id = localStorage.getItem(message_key);
-//        if (processed_id == null){
-//            processMessage(symmetric_key, message_id, decrypted_msg);
-//            localStorage.setItem(message_key, "processed");
-//        }
+        message_id_str = $(this).attr('data-id');
+        message_id = parseInt(message_id);
+        message_key = "message-"+message_id_str;
+        processed_id = localStorage.getItem(message_key);
+        if (processed_id == null){
+            processMessage(symmetric_key, message_id, decrypted_msg);
+            localStorage.setItem(message_key, "processed");
+        }
     });
 
     function computeSymmetricKey() {
