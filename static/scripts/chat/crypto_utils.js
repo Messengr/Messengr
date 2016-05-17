@@ -133,7 +133,20 @@ function produceEncodedPairList(key, id, message) {
  * @return {boolean} Returns a boolean of whether or not the message was processed.
  */
 function processMessage(key, id, message){
+    // Extracts encoded pair list from message
     encodedPairList = produceEncodedPairList(key, id, message);
-    sendPairsToDB(encodedPairList); // TODO: Imple
+    
+    var req_data = {
+        'pairs': encodedPairList
+    };
+    
+    // Sends encoded pair list to server
+    var path = window.location.pathname;
+    $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+    });
     return true;
 }
