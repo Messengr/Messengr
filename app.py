@@ -223,7 +223,6 @@ def joined(data):
         return False
     # Join chat room
     join_room(chat_id)
-    emit('status', {'msg': username + ' has entered the room.'}, room=chat_id)
 
 
 @socketio.on('new_message', namespace='/chat')

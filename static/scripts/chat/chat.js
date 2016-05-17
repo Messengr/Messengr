@@ -22,10 +22,6 @@ $(document).ready(function(){
     socket.on('connect', function() {
         socket.emit('joined', {});
     });
-    // Status message when user enter/leaves chat
-    socket.on('status', function(data) {
-        //alert(data['msg']);
-    });
     // Display new message
     socket.on('message', function(data) {
         var msg_id = data['id'];
