@@ -3,7 +3,7 @@
 {% block title %}Messengr | Chat{% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='scripts/chat.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/chat/chat.js') }}"></script>
 <script>
     var ENCRYPTED_SYM_KEY = {{enc_sym_key|tojson|safe}};
     var CURRENT_USERNAME = '{{username}}';
