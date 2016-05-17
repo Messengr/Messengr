@@ -183,8 +183,7 @@ def chat_encoded_pairs(id):
     # Check that user is logged in
     if 'logged_in' not in session or 'user' not in session:
         return redirect(url_for('login'))
-    user_id = session['user']['id']
-    username = session['user']['username']
+    
     encoded_pairs = request.form.get('encoded_pairs')
     
     if encoded_pairs is None:
