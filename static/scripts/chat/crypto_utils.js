@@ -91,8 +91,8 @@ function encodeEntry(key, w, id, cnt) {
     id = id.toString(16); // rewrite in hex format
     var c1 = xorWithId(id, hmac256(token, cnt + "1")); // Hash Value = id ^ HMAC(k, cnt || "1")
     return {
-        "hkey": hkey,
-        "hval": c1
+        "hash_key": hkey,
+        "hash_value": c1
     };
 }
 
@@ -116,7 +116,7 @@ function produceEncodedPairList(key, id, message) {
         } else {
             keyword_count = parseInt(keyword_count)+1;
         }
-        //localStorage.setItem(safeKeyword, keyword_count);
+        localStorage.setItem(safeKeyword, keyword_count);
         
         // Update document count for keyword.
         var encodedPair = encodeEntry(key, keyword, id, keyword_count);
@@ -138,18 +138,20 @@ function processMessage(key, id, message){
     encodedPairList = produceEncodedPairList(key, id, message);
     
     var req_data = {
-        'pairs': encodedPairList
+        'pairs': JSON.stringify(encodedPairList)
     };
     
     console.log(req_data);
     
     // Sends encoded pair list to server
-//    var path = window.location.pathname;
-//    $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
-//        if (data.error) {
-//            alert(data.error);
-//            return;
-//        }
-//    });
+    var path = window.location.pathname;
+    $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
+        if (data.success) {
+            alert(data.success);
+        } else if (data.error) {
+            alert(data.error);
+        }
+        return;
+    });
     return true;
 }
