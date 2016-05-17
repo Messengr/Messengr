@@ -6,6 +6,7 @@
 <script src="{{ url_for('static', filename='scripts/chat.js') }}"></script>
 <script>
     var ENCRYPTED_SYM_KEY = {{enc_sym_key|tojson|safe}};
+    var CURRENT_USERNAME = '{{username}}';
 </script>
 {% endblock%}
 
@@ -32,7 +33,7 @@
                     <div class="panel-body msg_container_base" id="chat_base">
                         {% if messages %}
                             {% for m in messages %}
-                                {% if m.sender_id == user %}
+                                {% if m.sender_id == user_id %}
                                     <div class="row msg_container base_sent">
                                         <div class="col-md-10 col-xs-10">
                                             <div class="messages msg_sent">
@@ -45,7 +46,7 @@
                                         </div>
                                     </div>
                                 {% endif %}
-                                {% if m.receiver_id == user %}
+                                {% if m.receiver_id == user_id %}
                                     <div class="row msg_container base_receive">
                                         <div class="col-md-2 col-xs-2 avatar">
                                             <img src="https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=retro" height="100" width="100" class="img-responsive">

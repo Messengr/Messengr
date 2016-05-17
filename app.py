@@ -175,7 +175,7 @@ def chat(id):
         encrypted_symmetric_key = chat.user1_sk_sym
     # Get messages for this chat and render the chat view
     messages = [message.to_dict() for message in models.get_chat_messages(id)]
-    return render_template('chat.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user=user_id, other_user=other_username)
+    return render_template('chat.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
 
 # Ensure authentication before handling socketio messages
 def authenticated_only(f):
@@ -204,8 +204,6 @@ def joined(data):
         return False
     # Join chat room
     join_room(chat_id)
-    # Send current user to client
-    emit('username', {'username': username}, room=request.sid)
     emit('status', {'msg': username + ' has entered the room.'}, room=chat_id)
 
 

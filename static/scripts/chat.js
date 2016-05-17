@@ -16,16 +16,11 @@ $(document).ready(function(){
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
 
     var socket;
-    var current_username;
     var symmetric_key;
 
     socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
         socket.emit('joined', {});
-    });
-    socket.on('username', function(data) {
-        // Cache current user's name
-        current_username = data['username'];
     });
     // Status message when user enter/leaves chat
     socket.on('status', function(data) {
@@ -43,10 +38,10 @@ $(document).ready(function(){
         }
         msg = sjcl.decrypt(symmetric_key, msg);
         
-        if (current_username == sender) {
+        if (CURRENT_USERNAME == sender) {
             $("#chat_base").append(newSenderMessage(msg, sender, dt));
         }
-        if (current_username == receiver) {
+        if (CURRENT_USERNAME == receiver) {
             $("#chat_base").append(newReceiverMessage(msg, sender, dt));
         }
         // Scroll to bottom
@@ -99,7 +94,7 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        serialized_sk = localStorage.getItem(current_username + "_secret_key");
+        serialized_sk = localStorage.getItem(CURRENT_USERNAME + "_secret_key");
         // Unserialized private key:
         unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
