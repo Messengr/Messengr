@@ -109,7 +109,7 @@ function produceEncodedPairList(key, id, message) {
     keywordList.forEach(function (keyword, index, array) {
         var safeKeyword = "keyword-" + keyword;
         var keyword_count = localStorage.getItem(safeKeyword);
-        
+
         if (keyword_count == null) {
             keyword_count = 1;
         } else {
