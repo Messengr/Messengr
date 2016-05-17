@@ -1,6 +1,7 @@
 import os
 from string import ascii_lowercase
 import functools
+import json
 
 import config
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
@@ -176,6 +177,26 @@ def chat(id):
     # Get messages for this chat and render the chat view
     messages = [message.to_dict() for message in models.get_chat_messages(id)]
     return render_template('chat.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
+
+@app.route('/chat/<int:id>/update/pairs', methods=['POST'])
+def chat_encoded_pairs(id):
+    # Check that user is logged in
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
+    
+    encoded_pairs = request.form.get('encoded_pairs')
+    
+    if encoded_pairs is None:
+        return jsonify({'error': "No encoded pairs included in request."})
+    else:
+        encoded_pairs_object = json.loads(encoded_pairs)
+        encoded_pairs = encoded_pairs_object['pairs']
+    
+    added_pair_count = models.insert_pairs(encoded_pairs)
+    if added_pair_count is None:
+        return jsonify({'error': "Error adding encoded pairs to db. Did not pass safety check."})
+
+    return jsonify({'success': "Added " + str(added_pair_count) + "encoded pairs to the db!"})
 
 # Ensure authentication before handling socketio messages
 def authenticated_only(f):
