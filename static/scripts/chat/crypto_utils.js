@@ -80,7 +80,7 @@ function xorWithId(id, hmacResult) {
  * secret key, the keyword, document id and the current count (how many times this keyword has shown up).
  * @param {string} key The key for the symmetric encryption used.
  * @param {string} w The keyword for this entry.
- * @param {string} id The document id for this entry.
+ * @param {integer} id The document id for this entry.
  * @param {integer} cnt The count of this entry.
  * @return {object} Returns a javascript object containing the hash key and hash value (key/value pair for hash).
  */
@@ -109,6 +109,7 @@ function produceEncodedPairList(key, id, message) {
     keywordList.forEach(function (keyword, index, array) {
         var safeKeyword = "keyword-" + keyword;
         var keyword_count = localStorage.getItem(safeKeyword);
+        
         if (keyword_count == null) {
             keyword_count = 1;
         } else {
