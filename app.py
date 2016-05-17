@@ -102,18 +102,18 @@ def create_user():
     
     # Invalid username or password
     if error is not None:
-        return render_template('login.html', error=error)
+        return jsonify(error=error)
 
     # Add new user to database
     id = models.add_user_to_db(username, password, public_key)
     if id is None:
         # Database error
-        return jsonify({'error': "Unexpected error."})
+        return jsonify(error="Unexpected error.")
 
     # Redirect new user to home page
     session['logged_in'] = True
     session['user'] = models.find_user_by_name(username).to_dict()
-    return redirect(url_for('home'))
+    return jsonify(username=session['user']['username'])
 
 
 @app.route('/logout')
