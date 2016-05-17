@@ -8,7 +8,7 @@ class User(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     dt = DB.Column(DB.DateTime)
     username = DB.Column(DB.String(32), unique=True)
-    pass_hash = DB.Column(DB.String(128))
+    pass_hash = DB.Column(DB.String(60))
     public_key = DB.Column(DB.String(256))
 
     def __init__(self, username, pass_hash, public_key):
@@ -44,6 +44,9 @@ def add_user_to_db(username, password, public_key):
     salt = bcrypt.gensalt()
     # Hash given password using salt
     pass_hash = bcrypt.hashpw(password.encode('utf-8'), salt)
+    # Safety check
+    if len(username) > 32 or len(pass_hash) > 60 or len(public_key) > 256:
+        return None
     # Create User instance
     new_user = User(username, pass_hash, public_key)
     # Insert to table

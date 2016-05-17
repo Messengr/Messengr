@@ -62,14 +62,14 @@ $(document).ready(function(){
     // Send new message to server when 'Send' button is clicked
     $("#send_message").click(function() {
         var message = $('#message').val();
+        // Clear message box
+        $('#message').val('');
         if (message === '') {
             // Empty message, do not send
             return;
         }
-        if (message.length > 500) {
-            // Message must be at most 500 characters
-            // Clear message box
-            $('#message').val('');
+        if (message.length > 250) {
+            // Unencrypted message must be at most 250 characters
             return;
         }
         if (!symmetric_key) {
@@ -77,8 +77,6 @@ $(document).ready(function(){
         }
         var message = sjcl.encrypt(symmetric_key, message);
 
-        // Clear message box
-        $('#message').val('');
         // Send message to server
         socket.emit('new_message', {msg: message});
     });
@@ -101,7 +99,7 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        serialized_sk = localStorage.getItem("secret_key");
+        serialized_sk = localStorage.getItem(current_username + "secret_key");
         // Unserialized private key:
         unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
