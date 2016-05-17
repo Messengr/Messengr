@@ -98,7 +98,7 @@ function encodeEntry(key, w, id, cnt) {
 /**
  * Produces the encoded pairs from a message.
  * @param {string} key The secret key for our search protocol.
- * @param {string} id The message identifier of the current message being processed.
+ * @param {integer} id The message identifier of the current message being processed.
  * @param {string} message Plaintext message to be processed.
  * @return {list} Returns a list of encoded pairs to store in our online database.
  */
@@ -123,4 +123,17 @@ function produceEncodedPairList(key, id, message) {
     });
 
     return encodedPairList;
+}
+
+/**
+ * Processes message and sends encoded pairs to DB.
+ * @param {string} key The secret key for our search protocol.
+ * @param {integer} id The message identifier of the current message being processed.
+ * @param {string} message Plaintext message to be processed.
+ * @return {boolean} Returns a boolean of whether or not the message was processed.
+ */
+function processMessage(key, id, message){
+    encodedPairList = produceEncodedPairList(key, id, message);
+    sendPairsToDB(encodedPairList); // TODO: Imple
+    return true;
 }

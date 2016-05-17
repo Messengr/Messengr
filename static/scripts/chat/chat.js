@@ -91,6 +91,15 @@ $(document).ready(function(){
         var enc_message = $(this).text();
         var decrypted_msg = sjcl.decrypt(symmetric_key, enc_message);
         $(this).text(decrypted_msg);
+        
+        // Process new messages
+//        message_id = getMessageId; // TODO: Implement getMessageId;
+//        message_key = "message-" + message_id.toString();
+//        processed_id = localStorage.getItem(message_key);
+//        if (processed_id == null){
+//            processMessage(symmetric_key, message_id, decrypted_msg);
+//            localStorage.setItem(message_key, "processed");
+//        }
     });
 
     function computeSymmetricKey() {
