@@ -104,32 +104,34 @@ $(document).ready(function(){
     }
 
     function newSenderMessage(msg, username, dt) {
-        var message = "<div class='row msg_container base_sent'>" + 
-                    "<div class='col-md-10 col-xs-10'>" + 
-                    "<div class='messages msg_sent'>" +
-                    "<p class='text-warning'>{0}</p>" +
-                    "<time datetime='{2}' class=''>{1} • {2}</time>" +
-                    "</div>" + 
-                    "</div>" +
-                    "<div class='col-md-2 col-xs-2 avatar'>" +
-                    "<img src='https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=retro' height='100' width='100' class='img-responsive'>" +
-                    "</div>" +
-                    "</div>";
-        return String.format(message, msg, username, dt);
+        return $('<div/>', {'class': 'row msg_container base_sent'}).append(
+                    $('<div/>', {'class': 'col-md-10 col-xs-10'}).append(
+                        $('<div/>', {'class': 'messages msg_sent'}).append(
+                            $('<p/>', {'class': 'text-warning', 'text': msg})
+                        ).append(
+                            $('<time/>', {'class': '', 'datetime': dt, 'text': username + '•' + dt})
+                        )
+                    )
+                ).append(
+                    $('<div/>', {'class': 'col-md-2 col-xs-2 avatar'}).append(
+                        $('<img/>', {'src': 'https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=retro', 'height': '100', 'width': '100', 'class': 'img-responsive'})
+                    )
+                );
     };
 
     function newReceiverMessage(msg, username, dt) {
-        var message = "<div class='row msg_container base_receive'>" +
-                "<div class='col-md-2 col-xs-2 avatar'>" +
-                "<img src='https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=retro' height='100' width='100' class='img-responsive'>" +
-                "</div>" +
-                "<div class='col-md-10 col-xs-10'>" +
-                "<div class='messages msg_receive'>" +
-                "<p class='text-warning'>{0}</p>" +
-                "<time datetime='{2}' class=''>{1} • {2}</time>" +
-                "</div>" +
-                "</div>" +
-                "</div>";
-        return String.format(message, msg, username, dt);
+        return $('<div/>', {'class': 'row msg_container base_receive'}).append(
+                    $('<div/>', {'class': 'col-md-2 col-xs-2 avatar'}).append(
+                        $('<img/>', {'src': 'https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=retro', 'height': '100', 'width': '100', 'class': 'img-responsive'})
+                    )
+                ).append(
+                    $('<div/>', {'class': 'col-md-10 col-xs-10'}).append(
+                        $('<div/>', {'class': 'messages msg_sent'}).append(
+                            $('<p/>', {'class': 'text-warning', 'text': msg})
+                        ).append(
+                            $('<time/>', {'class': '', 'datetime': dt, 'text': username + '•' + dt})
+                        )
+                    )
+                );
     };
 });

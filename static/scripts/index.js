@@ -18,7 +18,7 @@ $(document).ready(function(){
         var receiver_username = $('#receiver').val();
         // Clear message box
         $('#receiver').val('');
-        if (receiver_username === '' || receiver_username.length > 16) {
+        if (receiver_username === '' || receiver_username.length > 32) {
             // Invalid username, do not send
             return;
         }
