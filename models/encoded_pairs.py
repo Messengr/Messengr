@@ -1,7 +1,7 @@
 from app import DB
 from datetime import datetime
 
-column_length = 100
+column_length = 64
 
 class EncodedPair(DB.Model):
     __tablename__ = 'encoded_pairs'

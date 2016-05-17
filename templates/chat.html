@@ -3,6 +3,8 @@
 {% block title %}Messengr | Chat{% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/chat/message_utils.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/chat/crypto_utils.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/chat/chat.js') }}"></script>
 <script>
     var ENCRYPTED_SYM_KEY = {{enc_sym_key|tojson|safe}};
@@ -37,7 +39,7 @@
                                     <div class="row msg_container base_sent">
                                         <div class="col-md-10 col-xs-10">
                                             <div class="messages msg_sent">
-                                                <p class="text-warning">{{ m.text }}</p>
+                                                <p class="text-warning" data-id="{{m.id}}">{{ m.text }}</p>
                                                 <time datetime="{{ m.dt }}" class="">{{ m.sender_username }} • {{ m.dt }}</time>
                                             </div>
                                         </div>
@@ -53,7 +55,7 @@
                                         </div>
                                         <div class="col-md-10 col-xs-10">
                                             <div class="messages msg_receive">
-                                                <p class="text-warning">{{ m.text }}</p>
+                                                <p class="text-warning" data-id="{{m.id}}">{{ m.text }}</p>
                                                 <time datetime="{{ m.dt }}" class="">{{ m.sender_username }} • {{ m.dt }}</time>
                                             </div>
                                         </div>

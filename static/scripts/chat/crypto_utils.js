@@ -68,9 +68,10 @@ function xorHex(left, right) {
  * @return {string} Returns the xor of the inputs.
  */
 function xorWithId(id, hmacResult) {
+    var id_length = id.length;
     // id is always 16 characters long, the head never changes
-    var head = hmacResult.substring(0, 48);
-    var tail = hmacResult.substring(48, 64);
+    var head = hmacResult.substring(0, 64-id_length);
+    var tail = hmacResult.substring(64-id_length, 64);
     var newTail = xorHex(id, tail);
     return head + newTail;
 }
@@ -90,15 +91,15 @@ function encodeEntry(key, w, id, cnt) {
     id = id.toString(16); // rewrite in hex format
     var c1 = xorWithId(id, hmac256(token, cnt + "1")); // Hash Value = id ^ HMAC(k, cnt || "1")
     return {
-        "hkey": hkey,
-        "hval": c1
+        "hash_key": hkey,
+        "hash_value": c1
     };
 }
 
 /**
  * Produces the encoded pairs from a message.
  * @param {string} key The secret key for our search protocol.
- * @param {string} id The message identifier of the current message being processed.
+ * @param {integer} id The message identifier of the current message being processed.
  * @param {string} message Plaintext message to be processed.
  * @return {list} Returns a list of encoded pairs to store in our online database.
  */
@@ -123,4 +124,32 @@ function produceEncodedPairList(key, id, message) {
     });
 
     return encodedPairList;
+}
+
+/**
+ * Processes message and sends encoded pairs to DB.
+ * @param {string} key The secret key for our search protocol.
+ * @param {integer} id The message identifier of the current message being processed.
+ * @param {string} message Plaintext message to be processed.
+ * @return {boolean} Returns a boolean of whether or not the message was processed.
+ */
+function processMessage(key, id, message){
+    // Extracts encoded pair list from message
+    encodedPairList = produceEncodedPairList(key, id, message);
+    
+    var req_data = {
+        'pairs': JSON.stringify(encodedPairList)
+    };
+    
+    console.log(req_data);
+    
+    // Sends encoded pair list to server
+    var path = window.location.pathname;
+    $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
+        if (data.error) {
+            alert(data.error);
+        }
+        return;
+    });
+    return true;
 }
