@@ -56,8 +56,8 @@ $(document).ready(function(){
             // Account successfully created
             // Store keys in local storage
             var username = data.username;
-            var public_key_name = username + "public_key";
-            var secret_key_name = username + "secret_key";
+            var public_key_name = username + "_public_key";
+            var secret_key_name = username + "_secret_key";
             localStorage.setItem(public_key_name, pub_serialized);
             localStorage.setItem(secret_key_name, sec_serialized);
             // Redirect to homepage

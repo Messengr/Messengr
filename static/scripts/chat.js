@@ -99,7 +99,7 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        serialized_sk = localStorage.getItem(current_username + "secret_key");
+        serialized_sk = localStorage.getItem(current_username + "_secret_key");
         // Unserialized private key:
         unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
