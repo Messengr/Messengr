@@ -68,9 +68,10 @@ function xorHex(left, right) {
  * @return {string} Returns the xor of the inputs.
  */
 function xorWithId(id, hmacResult) {
+    var id_length = id.length;
     // id is always 16 characters long, the head never changes
-    var head = hmacResult.substring(0, 48);
-    var tail = hmacResult.substring(48, 64);
+    var head = hmacResult.substring(0, 64-id_length);
+    var tail = hmacResult.substring(64-id_length, 64);
     var newTail = xorHex(id, tail);
     return head + newTail;
 }

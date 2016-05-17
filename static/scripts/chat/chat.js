@@ -94,7 +94,7 @@ $(document).ready(function(){
         
         // Process new messages
         message_id_str = $(this).attr('data-id');
-        message_id = parseInt(message_id);
+        message_id = parseInt(message_id_str);
         message_key = "message-"+message_id_str;
         processed_id = localStorage.getItem(message_key);
         if (processed_id == null){
