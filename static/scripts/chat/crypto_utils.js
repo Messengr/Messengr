@@ -115,7 +115,7 @@ function produceEncodedPairList(key, id, message) {
         } else {
             keyword_count = parseInt(keyword_count)+1;
         }
-        localStorage.setItem(safeKeyword, keyword_count);
+        //localStorage.setItem(safeKeyword, keyword_count);
         
         // Update document count for keyword.
         var encodedPair = encodeEntry(key, keyword, id, keyword_count);
@@ -140,13 +140,15 @@ function processMessage(key, id, message){
         'pairs': encodedPairList
     };
     
+    console.log(req_data);
+    
     // Sends encoded pair list to server
-    var path = window.location.pathname;
-    $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
-        if (data.error) {
-            alert(data.error);
-            return;
-        }
-    });
+//    var path = window.location.pathname;
+//    $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
+//        if (data.error) {
+//            alert(data.error);
+//            return;
+//        }
+//    });
     return true;
 }

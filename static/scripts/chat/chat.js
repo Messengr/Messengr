@@ -99,7 +99,7 @@ $(document).ready(function(){
         processed_id = localStorage.getItem(message_key);
         if (processed_id == null){
             processMessage(symmetric_key, message_id, decrypted_msg);
-            localStorage.setItem(message_key, "processed");
+            //localStorage.setItem(message_key, "processed");
         }
     });
 
