@@ -18,16 +18,17 @@ $(document).ready(function(){
     var socket;
     var symmetric_key;
 
-    socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
+    socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
         socket.emit('joined', {});
     });
     // Status message when user enter/leaves chat
     socket.on('status', function(data) {
-        alert(data['msg']);
+        //alert(data['msg']);
     });
     // Display new message
     socket.on('message', function(data) {
+        var msg_id = data['id'];
         var msg = data['msg'];
         var sender = data['sender'];
         var receiver = data['receiver'];
@@ -37,6 +38,9 @@ $(document).ready(function(){
             computeSymmetricKey();
         }
         msg = sjcl.decrypt(symmetric_key, msg);
+        
+        // Message processing for search protocol
+        processNewMessage(msg_id, msg);
         
         if (CURRENT_USERNAME == sender) {
             $("#chat_base").append(newSenderMessage(msg, sender, dt));
@@ -93,14 +97,8 @@ $(document).ready(function(){
         $(this).text(decrypted_msg);
         
         // Process new messages
-        message_id_str = $(this).attr('data-id');
-        message_id = parseInt(message_id_str);
-        message_key = "message-"+message_id_str;
-        processed_id = localStorage.getItem(message_key);
-        if (processed_id == null){
-            processMessage(symmetric_key, message_id, decrypted_msg);
-            localStorage.setItem(message_key, "processed");
-        }
+        var message_id = parseInt($(this).attr('data-id'));
+        processNewMessage(message_id, decrypted_msg);
     });
 
     function computeSymmetricKey() {
@@ -111,6 +109,24 @@ $(document).ready(function(){
             sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(serialized_sk))
         );
         symmetric_key = sjcl.decrypt(unserialized_sk, ENCRYPTED_SYM_KEY);
+    }
+    
+    /**
+     * Checks if message has been processed before and processes if not.
+     * @param {integer} message_id The identifier for a message.
+     * @param {string} message The message to be processed.
+     * @return {boolean} Returns a boolean of whether or not the message was processed.
+     */
+    function processNewMessage(message_id, message) {
+        var message_key = "message-" + message_id.toString();
+        var processed_id = localStorage.getItem(message_key);
+        if (processed_id != null) {
+            return false;
+        } else {
+            processMessage(symmetric_key, message_id, message);
+            localStorage.setItem(message_key, "processed");
+        }
+        return true;
     }
 
     function newSenderMessage(msg, username, dt) {

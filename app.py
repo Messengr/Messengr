@@ -260,6 +260,7 @@ def new_message(data):
         'sender': msg.sender_username,
         'receiver': msg.receiver_username,
         'msg': msg.text,
+        'id': msg.id,
         'dt': msg.dt.isoformat()
     }, room=chat_id)
 

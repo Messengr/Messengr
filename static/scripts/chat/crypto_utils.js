@@ -146,9 +146,7 @@ function processMessage(key, id, message){
     // Sends encoded pair list to server
     var path = window.location.pathname;
     $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
-        if (data.success) {
-            alert(data.success);
-        } else if (data.error) {
+        if (data.error) {
             alert(data.error);
         }
         return;
