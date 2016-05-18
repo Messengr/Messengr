@@ -163,7 +163,7 @@ def chat(id):
     # Check that this chat exists and user is valid participant
     chat = models.get_chat(id)
     if not chat or (user_id != chat.user1_id and user_id != chat.user2_id):
-        return make_response(jsonify(error='Not found'), 404)
+        return make_response(jsonify(error="Not found"), 404)
     chat_id = chat.id
     session['chat_id'] = chat_id
     # Get the 'other' user in the chat
@@ -231,15 +231,15 @@ def chat_encoded_pairs(id):
     encoded_pairs = request.form.get('pairs')
     
     if encoded_pairs is None:
-        return jsonify(error = "Bad request. No encoded pairs found.")
+        return jsonify(error="Bad request. No encoded pairs found.")
     else: 
         encoded_pairs = json.loads(encoded_pairs)
     
     added_pair_count = models.insert_pairs(encoded_pairs)
     if added_pair_count is None:
-        return jsonify(error = "Error adding encoded pairs to db. Did not pass safety check.")
+        return jsonify(error="Error adding encoded pairs to db. Did not pass safety check.")
     
-    return jsonify(success = "Added " + str(added_pair_count) + " encoded pairs to the db!")
+    return jsonify(success="Added " + str(added_pair_count) + " encoded pairs to the db!")
 
 # Ensure authentication before handling socketio messages
 def authenticated_only(f):
