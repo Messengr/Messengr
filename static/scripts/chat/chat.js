@@ -12,11 +12,38 @@ if (!String.format) {
 }
 
 $(document).ready(function(){
-    // Scroll to bottom
-    $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
-
     var socket;
     var symmetric_key;
+    
+    // Scroll to bottom
+    $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
+    
+    // Handle Search
+    $('#send_message').click(function() {
+        var keyword = $('#search_text').val();
+        
+        if (!symmetric_key) {
+            computeSymmetricKey();
+        }
+        
+        var token = tokenize(symmetric_key, keyword);
+        var count = getMessageCount(keyword);
+        var req_data = produceRequest(token, count); 
+        
+        var path = window.location.pathname;
+        
+        // Send search request
+        $.post($SCRIPT_ROOT + path + '/search', req_data, function(data) {
+            if (data.error) {
+                $('#search_text').val('');
+                alert(data.error);
+                return;
+            }
+            // Redirect to search result page
+            window.location.href = $SCRIPT_ROOT + path;
+        });
+        
+    });
 
     socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {

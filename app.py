@@ -178,6 +178,30 @@ def chat(id):
     messages = [message.to_dict() for message in models.get_chat_messages(id)]
     return render_template('chat.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
 
+@app.route('/chat/<int:id>/search', methods=['GET', 'POST'])
+def search_results(id, token):
+    # Check that user is logged in
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        search_token = request.form.get('search_token')
+        result_count = request.form.get('result_count')
+
+        if None in [search_token, result_count]:
+            return jsonify({'error' : "Bad request. No search token or result count found."})
+
+        message_ids = models.get_message_ids(search_token, result_count)
+
+        session['search_ids'] = message_ids
+        return jsonify({'success' : "DB search successful."})
+    elif request.method == 'GET':
+        if 'search_ids' not in session:
+            return redirect(url_for('chat', id = id))
+        else:
+            
+        
+    
 @app.route('/chat/<int:id>/update/pairs', methods=['POST'])
 def chat_encoded_pairs(id):
     # Check that user is logged in
@@ -194,6 +218,7 @@ def chat_encoded_pairs(id):
     added_pair_count = models.insert_pairs(encoded_pairs)
     if added_pair_count is None:
         return jsonify({'error': "Error adding encoded pairs to db. Did not pass safety check."})
+    
     return jsonify({'success': "Added " + str(added_pair_count) + " encoded pairs to the db!"})
 
 # Ensure authentication before handling socketio messages

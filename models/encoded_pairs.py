@@ -15,7 +15,7 @@ class EncodedPair(DB.Model):
         self.hash_value = hash_value
         
     def __repr__(self):
-        return '<Encoded Pair %r -> >' % (self.hash_key, self.hash_value)
+        return '<Encoded Pair %r -> %r>' % (self.hash_key, self.hash_value)
 
     def to_dict(self):
         return {
@@ -44,5 +44,6 @@ def insert_pairs(encoded_pairs):
     # Return the new message
     return len(db_pairs)
     
-def search_pairs(token, count):
-    pass
+def get_message_ids(token, count):
+    query = EncodedPair.query.filter(EncodedPair.id.in_(my_list)).all()
+    return query
