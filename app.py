@@ -123,6 +123,7 @@ def logout():
     session.pop('logged_in', None)
     session.pop('user', None)
     session.pop('chat_id', None)
+    session.pop('search_ids')
     return redirect(url_for('login'))
 
 @app.route('/chat/create', methods=['POST'])
