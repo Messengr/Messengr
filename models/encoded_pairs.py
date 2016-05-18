@@ -1,6 +1,6 @@
 from app import DB
 from datetime import datetime
-from sqlalchemy import asc
+from sqlalchemy import asc, func
 import hash_utils
 
 column_length = 64
@@ -28,6 +28,13 @@ class EncodedPair(DB.Model):
 
 
 def insert_pairs(encoded_pairs):
+    if len(encoded_pairs) == 0:
+        return 0
+    first_pair = encoded_pairs[0]
+    check = DB.session.query(EncodedPair).filter_by(hash_key=first_pair["hash_key"]).first()
+    if check is not None:
+        return 0
+    
     db_pairs = []
 
     for encoded_pair in encoded_pairs:
@@ -49,7 +56,7 @@ def insert_pairs(encoded_pairs):
 def get_message_ids(token, count):
     hash_keys = []
     hash_value_decouplers = []
-    for i in range(1, count + 1):
+    for i in xrange(1, count + 1):
         hash_key_message = str(i) + "0"
         hash_key = hash_utils.hmac256(token, hash_key_message)
         hash_keys.append(hash_key)
@@ -59,13 +66,17 @@ def get_message_ids(token, count):
         hash_value_decouplers.append(hash_value_decoupler)
     
     
-    encoded_pairs = DB.session.query.filter(EncodedPair.hash_key.in_(hash_keys)).all().order_by(EncodedPair.id.asc())
+    encoded_pairs = EncodedPair.query.filter(EncodedPair.hash_key.in_(hash_keys)).order_by(EncodedPair.id.asc()).all()
 
     message_ids = []
+    
+    
     for ind, encoded_pair in enumerate(encoded_pairs):
         hash_value = encoded_pair.hash_value
         hash_decoupler = hash_value_decouplers[ind]
-        message_id = hash_utils.xor_strings(hash_value, hash_decoupler)
+        message_id = hash_utils.get_id(hash_value, hash_decoupler)
         message_ids.append(message_id)
+    
+    print(message_ids)
     
     return message_ids

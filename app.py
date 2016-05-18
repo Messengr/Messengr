@@ -179,7 +179,7 @@ def chat(id):
     return render_template('chat.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
 
 @app.route('/chat/<int:id>/search', methods=['GET', 'POST'])
-def search_results(id, token):
+def search_results(id):
     # Check that user is logged in
     if 'logged_in' not in session or 'user' not in session:
         return redirect(url_for('login'))
@@ -190,7 +190,12 @@ def search_results(id, token):
 
         if None in [search_token, result_count]:
             return jsonify({'error' : "Bad request. No search token or result count found."})
-
+        else:
+            search_token = unicode(search_token).encode('utf8')
+            if result_count == '':
+                result_count = 0
+            result_count = int(result_count)
+        
         message_ids = models.get_message_ids(search_token, result_count)
         
         session['search_ids'] = message_ids
