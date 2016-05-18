@@ -185,21 +185,32 @@ def search_results(id, token):
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        search_token = request.form.get('search_token')
-        result_count = request.form.get('result_count')
+        search_token = request.form.get('token')
+        result_count = request.form.get('count')
 
         if None in [search_token, result_count]:
             return jsonify({'error' : "Bad request. No search token or result count found."})
 
         message_ids = models.get_message_ids(search_token, result_count)
-
+        
         session['search_ids'] = message_ids
         return jsonify({'success' : "DB search successful."})
     elif request.method == 'GET':
         if 'search_ids' not in session:
             return redirect(url_for('chat', id = id))
         else:
+            message_ids = session['search_ids']
+            messages = models.get_messages(message_ids)
             
+            chat = models.get_chat(id)
+            chat_id = chat.id
+            user_id = session['user']['id']
+            username = session['user']['username']
+            other_userid = chat.user1_id
+            other_username = chat.user1_name
+            encrypted_symmetric_key = chat.user2_sk_sym
+            
+            return render_template('chat_search.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
         
     
 @app.route('/chat/<int:id>/update/pairs', methods=['POST'])

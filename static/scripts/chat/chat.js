@@ -20,14 +20,14 @@ $(document).ready(function(){
     
     // Handle Search
     $('#send_message').click(function() {
-        var keyword = $('#search_text').val();
+        var keyword = $('#search_text').val().toLowerCase();
         
         if (!symmetric_key) {
             computeSymmetricKey();
         }
         
         var token = tokenize(symmetric_key, keyword);
-        var count = getMessageCount(keyword);
+        var count = localStorage.getItem('keyword-' + keyword);
         var req_data = {
             "token" : token, 
             "count" : count
