@@ -28,19 +28,23 @@ $(document).ready(function(){
         
         var token = tokenize(symmetric_key, keyword);
         var count = getMessageCount(keyword);
-        var req_data = produceRequest(token, count); 
+        var req_data = {
+            "token" : token, 
+            "count" : count
+        }; 
         
         var path = window.location.pathname;
+        var search_path = $SCRIPT_ROOT + path + '/search';
         
         // Send search request
-        $.post($SCRIPT_ROOT + path + '/search', req_data, function(data) {
+        $.post(search_path, req_data, function(data) {
             if (data.error) {
                 $('#search_text').val('');
                 alert(data.error);
                 return;
             }
             // Redirect to search result page
-            window.location.href = $SCRIPT_ROOT + path;
+            window.location.href = search_path;
         });
         
     });
