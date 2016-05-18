@@ -19,7 +19,7 @@ $(document).ready(function(){
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
     
     // Handle Search
-    $('#send_message').click(function() {
+    $('#send_keyword').click(function() {
         var keyword = $('#search_text').val().toLowerCase();
         
         if (!symmetric_key) {
