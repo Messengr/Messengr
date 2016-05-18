@@ -1,6 +1,5 @@
 from app import DB
 from datetime import datetime
-from sqlalchemy import asc
 
 class Message(DB.Model):
     __tablename__ = 'messages'
@@ -44,7 +43,7 @@ def get_message(id):
     return Message.query.get(id)
 
 def get_messages(message_ids):
-    messages = Message.query.filter(Message.id.in_(message_ids)).order_by(Message.id.asc()).all()
+    messages = Message.query.filter(Message.id.in_(message_ids)).all()
     return messages
 
 def add_message(text, sender_id, sender_username, receiver_id, receiver_username, chat_id):
