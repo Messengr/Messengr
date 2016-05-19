@@ -143,8 +143,6 @@ function processMessage(key, id, message, chat_id){
         'pairs': JSON.stringify(encodedPairList)
     };
     
-    console.log(req_data);
-    
     // Sends encoded pair list to server
     var path = window.location.pathname;
     $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
