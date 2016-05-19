@@ -101,14 +101,15 @@ function encodeEntry(key, w, id, cnt) {
  * @param {string} key The secret key for our search protocol.
  * @param {integer} id The message identifier of the current message being processed.
  * @param {string} message Plaintext message to be processed.
+ * @param {string} chat_id Chat identifier to be processed.
  * @return {list} Returns a list of encoded pairs to store in our online database.
  */
-function produceEncodedPairList(key, id, message) {
+function produceEncodedPairList(key, id, message, chat_id) {
     var keywordList = getKeywords(message);
     var encodedPairList = [];
 
     keywordList.forEach(function (keyword, index, array) {
-        var safeKeyword = "keyword-" + keyword;
+        var safeKeyword = "keyword-" + chat_id + "-" + keyword;
         var keyword_count = localStorage.getItem(safeKeyword);
 
         if (keyword_count == null) {
@@ -131,11 +132,12 @@ function produceEncodedPairList(key, id, message) {
  * @param {string} key The secret key for our search protocol.
  * @param {integer} id The message identifier of the current message being processed.
  * @param {string} message Plaintext message to be processed.
+ * @param {string} chat_id Chat identifier to be processed.
  * @return {boolean} Returns a boolean of whether or not the message was processed.
  */
-function processMessage(key, id, message){
+function processMessage(key, id, message, chat_id){
     // Extracts encoded pair list from message
-    encodedPairList = produceEncodedPairList(key, id, message);
+    encodedPairList = produceEncodedPairList(key, id, message, chat_id);
     
     var req_data = {
         'pairs': JSON.stringify(encodedPairList)

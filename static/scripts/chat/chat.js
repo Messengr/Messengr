@@ -2,6 +2,9 @@ $(document).ready(function(){
     var socket;
     var symmetric_key;
     
+    var path = window.location.pathname;
+    var chat_id = path.substring(6, path.length);
+    
     // Scroll to bottom
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
     
@@ -14,13 +17,12 @@ $(document).ready(function(){
         }
         
         var token = tokenize(symmetric_key, keyword);
-        var count = localStorage.getItem('keyword-' + keyword);
+        var count = localStorage.getItem('keyword-' + chat_id + "-" + keyword);
         var req_data = {
             "token" : token, 
             "count" : count
         }; 
         
-        var path = window.location.pathname;
         var search_path = $SCRIPT_ROOT + path + '/search';
         
         // Send search request
@@ -137,7 +139,7 @@ $(document).ready(function(){
         if (processed_id != null) {
             return false;
         } else {
-            processMessage(symmetric_key, message_id, message);
+            processMessage(symmetric_key, message_id, message, chat_id);
             localStorage.setItem(message_key, "processed");
         }
         return true;
