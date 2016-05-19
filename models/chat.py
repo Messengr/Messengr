@@ -72,3 +72,14 @@ def update_chat_last_message_time(chat_id, last_message_dt):
     chat.last_message_dt = last_message_dt
     # Commit
     DB.session.commit()
+
+def find_chat_by_users(userA_id, userB_id):
+    # Check for both possible orders for userA and userB in chat
+    chat = Chat.query.filter(Chat.user1_id == userA_id).filter(Chat.user2_id == userB_id).first()
+    if chat is not None:
+        return chat.id
+    chat = Chat.query.filter(Chat.user1_id == userB_id).filter(Chat.user2_id == userA_id).first()
+    if chat is not None:
+        return chat.id
+    # No such chat exists
+    return None
