@@ -1,4 +1,8 @@
 import os
+
+os.environ["DATABASE_URL"] = "testdb"
+os.environ["APP_SETTINGS"] = "config.DevelopmentConfig"
+
 import app as SecureMessenger
 import unittest
 import tempfile
