@@ -1,4 +1,8 @@
 import os
+
+os.environ["DATABASE_URL"] = "testdb"
+os.environ["APP_SETTINGS"] = "config.DevelopmentConfig"
+
 import app as SecureMessenger
 import unittest
 import tempfile
@@ -8,8 +12,6 @@ import models
 class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
-        os.environ["DATABASE_URL"] = "testdb"
-        os.environ["APP_SETTINGS"] = "config.DevelopmentConfig"
         self.db_fd, SecureMessenger.app.config['DATABASE'] = tempfile.mkstemp()
         SecureMessenger.app.config['TESTING'] = True
         self.app = SecureMessenger.app.test_client()
