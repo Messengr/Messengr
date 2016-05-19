@@ -83,13 +83,3 @@ def find_chat_by_users(userA_id, userB_id):
         return chat.id
     # No such chat exists
     return None
-
-def delete_chat(chat_id):
-    chat = get_chat(chat_id)
-    if chat is None:
-        return None
-    # Delete from table
-    DB.session.delete(chat)
-    # Commit
-    DB.session.commit()
-
