@@ -216,9 +216,14 @@ def search_results(id):
             chat_id = chat.id
             user_id = session['user']['id']
             username = session['user']['username']
+            # Get the 'other' user in the chat
             other_userid = chat.user1_id
             other_username = chat.user1_name
             encrypted_symmetric_key = chat.user2_sk_sym
+            if user_id == chat.user1_id:
+                other_userid = chat.user2_id
+                other_username = chat.user2_name
+                encrypted_symmetric_key = chat.user1_sk_sym
             
             return render_template('chat_search.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
         
