@@ -30,7 +30,6 @@
                 <th>Username</th>
                 <th>Chat created</th>
                 <th>Last message time</th>
-                <th>Delete</th>
               </tr>
             </thead>
             <tbody>
@@ -46,18 +45,12 @@
                             {% endif%}
                             <td>{{ c.dt }}</td>
                             <td>{{ c.last_message_dt }}</td>
-                            <td>
-                                <form action="{{ url_for('delete_chat', id=c.id) }}" method="post">
-                                    <input class="btn btn-danger" type="submit" value="Delete">
-                                </form>
-                            </td>
                         </tr> 
                     {% endfor %}
                 {% else %}
                     <tr class="danger">
                         <td></td>
                         <td>No chats found.</td>
-                        <td></td>
                         <td></td>
                     </tr>
                 {% endif%}
