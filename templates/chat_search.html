@@ -5,7 +5,7 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='scripts/chat/message_utils.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/chat/crypto_utils.js') }}"></script>
-<script src="{{ url_for('static', filename='scripts/chat/chat.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/chat/search.js') }}"></script>
 <script>
     var ENCRYPTED_SYM_KEY = {{enc_sym_key|tojson|safe}};
     var CURRENT_USERNAME = '{{username}}';
@@ -17,8 +17,8 @@
     <div class="container">
 
         <div class="row" style="margin-left:10px;">
-            <h2>Messages</h2>
-            <button class="btn btn-primary btn-sm" id="leaveChat">Leave chat</button>
+            <h2>Search Results</h2>
+            <button class="btn btn-primary btn-sm" id="returnToChat">Return to chat</button>
         </div>
 
         <br><br>
@@ -66,24 +66,9 @@
                             <p>No messages found.</p>
                         {% endif %}
                     </div>
-                    <div class="panel-footer">
-                        <div class="input-group">
-                            <input id="message" name="message" type="text" class="form-control input-sm chat_input" placeholder="Write your message here..." maxlength="250"> <span class="input-group-btn">
-                            <button class="btn btn-primary btn-sm" type="submit" id="send_message">Send</button>
-                            </span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-10" style="margin-left:30px; margin-top:30px;">
-            <div class="input-group">
-                <input type="text" id="search_text" class="form-control" placeholder="Search for keyword...">
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="search_keyword">Search!</button>
-                </span>
-            </div><!-- /input-group -->
-        </div><!-- /.col-lg-6 -->
     </div>
 
 {% endblock %}

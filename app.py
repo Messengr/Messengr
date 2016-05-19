@@ -44,12 +44,12 @@ def get_public_key():
         sender_public_key = session['user']['public_key']
     else:
         # User is not logged in, return error message
-        return jsonify({'error': "Unauthorized request."})
+        return jsonify(error="Unauthorized request.")
     # Get receiver_username from request
     receiver_username = request.args.get('receiver_username', '')
     # Make sure that the receiver exists
     if not models.check_if_user_exists(receiver_username):
-        return jsonify({"error": "This user does not exist."})
+        return jsonify(error="This user does not exist.")
     # Find receiver user
     receiver = models.find_user_by_name(receiver_username)
     return jsonify(sender_public_key=sender_public_key, receiver_public_key=receiver.public_key)
@@ -123,6 +123,7 @@ def logout():
     session.pop('logged_in', None)
     session.pop('user', None)
     session.pop('chat_id', None)
+    session.pop('search_ids', None)
     return redirect(url_for('login'))
 
 @app.route('/chat/create', methods=['POST'])
@@ -134,23 +135,23 @@ def create_chat():
         sender_public_key = session['user']['public_key']
     else:
         # User is not logged in, return error message
-        return jsonify({'error': "Unauthorized request."})
+        return jsonify(error="Unauthorized request.")
     sk_sym_1 = request.form.get('sk_sym_1', '')
     sk_sym_2 = request.form.get('sk_sym_2', '')
     receiver_username = request.form.get('receiver_username', '')
     receiver_public_key = request.form.get('receiver_public_key', '')
     # Safety check
     if (len(username) > 32) or (len(receiver_username) > 32) or (len(sk_sym_1) > 500) or (len(sk_sym_2) > 500):
-        return jsonify({'error': "Unable to create chat."})
+        return jsonify(error="Unable to create chat.")
     if '' in [sk_sym_1, sk_sym_2, receiver_username, receiver_public_key]:
-        return jsonify({'error': "Unable to create chat."})
+        return jsonify(error="Unable to create chat.")
     receiver = models.find_user_by_name(receiver_username)
     if (receiver is None) or (receiver.public_key != receiver_public_key):
-        return jsonify({'error': "Unexpected error."})
+        return jsonify(error="Unexpected error.")
     chat_id = models.create_chat(user_id, username, sk_sym_1, receiver.id, receiver.username, sk_sym_2)
     # Safety check
     if chat_id is None:
-        return jsonify({'error': "Unable to create chat."})
+        return jsonify(error="Unable to create chat.")
     return jsonify(chat_id=chat_id)
 
 @app.route('/chat/<int:id>')
@@ -163,7 +164,7 @@ def chat(id):
     # Check that this chat exists and user is valid participant
     chat = models.get_chat(id)
     if not chat or (user_id != chat.user1_id and user_id != chat.user2_id):
-        return make_response(jsonify({'error': 'Not found'}), 404)
+        return make_response(jsonify(error="Not found"), 404)
     chat_id = chat.id
     session['chat_id'] = chat_id
     # Get the 'other' user in the chat
@@ -178,23 +179,73 @@ def chat(id):
     messages = [message.to_dict() for message in models.get_chat_messages(id)]
     return render_template('chat.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
 
+@app.route('/chat/<int:id>/search', methods=['GET', 'POST'])
+def search_results(id):
+
+    if request.method == 'POST':
+        # Check that user is logged in
+        if 'logged_in' not in session or 'user' not in session:
+            return jsonify(error="Unauthorized request.")
+        
+        search_token = request.form.get('token', '')
+        result_count = request.form.get('count', '')
+
+        if '' in [search_token, result_count]:
+            return jsonify(error="Bad request. No search token or result count found.")
+        else:
+            search_token = unicode(search_token).encode('utf8')
+            if result_count == '':
+                result_count = 0
+            result_count = int(result_count)
+        
+        message_ids = models.get_message_ids(search_token, result_count)
+        
+        session['search_ids'] = message_ids
+        return jsonify(success="DB search successful.")
+    elif request.method == 'GET':
+            # Check that user is logged in
+        if 'logged_in' not in session or 'user' not in session:
+            return redirect(url_for('login'))
+        if 'search_ids' not in session:
+            return redirect(url_for('chat', id = id))
+        else:
+            message_ids = session['search_ids']
+            messages = models.get_messages(message_ids)
+            
+            chat = models.get_chat(id)
+            chat_id = chat.id
+            user_id = session['user']['id']
+            username = session['user']['username']
+            # Get the 'other' user in the chat
+            other_userid = chat.user1_id
+            other_username = chat.user1_name
+            encrypted_symmetric_key = chat.user2_sk_sym
+            if user_id == chat.user1_id:
+                other_userid = chat.user2_id
+                other_username = chat.user2_name
+                encrypted_symmetric_key = chat.user1_sk_sym
+            
+            return render_template('chat_search.html', chat_id=chat_id, enc_sym_key=encrypted_symmetric_key, messages=messages, user_id=user_id, username=username, other_user=other_username)
+        
+    
 @app.route('/chat/<int:id>/update/pairs', methods=['POST'])
 def chat_encoded_pairs(id):
     # Check that user is logged in
     if 'logged_in' not in session or 'user' not in session:
-        return redirect(url_for('login'))
+        return jsonify(error="Unauthorized request.")
     
     encoded_pairs = request.form.get('pairs')
     
     if encoded_pairs is None:
-        return jsonify({'error': "Bad request. No encoded pairs found."})
+        return jsonify(error="Bad request. No encoded pairs found.")
     else: 
         encoded_pairs = json.loads(encoded_pairs)
     
     added_pair_count = models.insert_pairs(encoded_pairs)
     if added_pair_count is None:
-        return jsonify({'error': "Error adding encoded pairs to db. Did not pass safety check."})
-    return jsonify({'success': "Added " + str(added_pair_count) + " encoded pairs to the db!"})
+        return jsonify(error="Error adding encoded pairs to db. Did not pass safety check.")
+    
+    return jsonify(success="Added " + str(added_pair_count) + " encoded pairs to the db!")
 
 # Ensure authentication before handling socketio messages
 def authenticated_only(f):

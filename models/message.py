@@ -42,6 +42,10 @@ def get_message(id):
     # Search by primary key
     return Message.query.get(id)
 
+def get_messages(message_ids):
+    messages = Message.query.filter(Message.id.in_(message_ids)).all()
+    return messages
+
 def add_message(text, sender_id, sender_username, receiver_id, receiver_username, chat_id):
     # Safety check
     if len(text) > 500 or len(sender_username) > 32 or len(receiver_username) > 32:

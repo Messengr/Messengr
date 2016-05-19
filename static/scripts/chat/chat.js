@@ -1,22 +1,42 @@
-// Useful format function
-if (!String.format) {
-  String.format = function(format) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    return format.replace(/{(\d+)}/g, function(match, number) { 
-      return typeof args[number] != 'undefined'
-        ? args[number] 
-        : match
-      ;
-    });
-  };
-}
-
 $(document).ready(function(){
-    // Scroll to bottom
-    $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
-
     var socket;
     var symmetric_key;
+    
+    var path = window.location.pathname;
+    var chat_id = path.substring(6, path.length);
+    
+    // Scroll to bottom
+    $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
+    
+    // Handle Search
+    $('#search_keyword').click(function() {
+        var keyword = $('#search_text').val().toLowerCase();
+        
+        if (!symmetric_key) {
+            computeSymmetricKey();
+        }
+        
+        var token = tokenize(symmetric_key, keyword);
+        var count = localStorage.getItem('keyword-' + chat_id + "-" + keyword);
+        var req_data = {
+            "token" : token, 
+            "count" : count
+        }; 
+        
+        var search_path = $SCRIPT_ROOT + path + '/search';
+        
+        // Send search request
+        $.post(search_path, req_data, function(data) {
+            if (data.error) {
+                $('#search_text').val('');
+                alert(data.error);
+                return;
+            }
+            // Redirect to search result page
+            window.location.href = search_path;
+        });
+        
+    });
 
     socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
     socket.on('connect', function() {
@@ -119,7 +139,7 @@ $(document).ready(function(){
         if (processed_id != null) {
             return false;
         } else {
-            processMessage(symmetric_key, message_id, message);
+            processMessage(symmetric_key, message_id, message, chat_id);
             localStorage.setItem(message_key, "processed");
         }
         return true;
