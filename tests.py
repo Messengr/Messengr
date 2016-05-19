@@ -42,5 +42,6 @@ class LoginTestCase(BaseTestCase):
         self.assertIn("Error: Invalid username and/or password", rv.data)
         self.assertEqual(rv.status_code, 200)
 
+        
 if __name__ == '__main__':
     unittest.main()
