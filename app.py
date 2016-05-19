@@ -148,6 +148,11 @@ def create_chat():
     receiver = models.find_user_by_name(receiver_username)
     if (receiver is None) or (receiver.public_key != receiver_public_key):
         return jsonify(error="Unexpected error.")
+    # Check if such a chat already exists
+    existing_chat_id = models.find_chat_by_users(user_id, receiver.id)
+    if existing_chat_id is not None:
+        return jsonify(chat_id=existing_chat_id)
+    # Chat does not already exist; must create new chat
     chat_id = models.create_chat(user_id, username, sk_sym_1, receiver.id, receiver.username, sk_sym_2)
     # Safety check
     if chat_id is None:
