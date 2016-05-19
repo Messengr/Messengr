@@ -62,3 +62,7 @@ def add_message(text, sender_id, sender_username, receiver_id, receiver_username
 def get_chat_messages(chat_id):
     # Fetch all Messages in given chat
     return Message.query.filter_by(chat_id=chat_id).order_by(Message.dt).all()
+
+def delete_chat_messages(chat_id):
+    # Delete all Messages in given chat
+    Message.query.filter_by(chat_id=chat_id).delete()

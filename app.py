@@ -159,6 +159,20 @@ def create_chat():
         return jsonify(error="Unable to create chat.")
     return jsonify(chat_id=chat_id)
 
+@app.route('/chat/delete/<int:id>', methods=['POST'])
+def delete_chat(id):
+    # Check that user is logged in
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user']['id']
+    # Check that this chat exists and user is valid participant
+    chat = models.get_chat(id)
+    if not chat or (user_id != chat.user1_id and user_id != chat.user2_id):
+        return make_response(jsonify(error="Not found"), 404)
+    models.delete_chat(id)
+    models.delete_chat_messages(id)
+    return redirect(url_for('home'))
+
 @app.route('/chat/<int:id>')
 def chat(id):
     # Check that user is logged in
