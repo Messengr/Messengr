@@ -5,13 +5,17 @@ class Message(DB.Model):
     __tablename__ = 'messages'
 
     id = DB.Column(DB.Integer, primary_key=True)
-    dt = DB.Column(DB.DateTime)
-    text = DB.Column(DB.String(500))
-    sender_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
-    sender_username = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
-    receiver_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
-    receiver_username = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
-    chat_id = DB.Column(DB.Integer, DB.ForeignKey('chats.id'))
+    dt = DB.Column(DB.DateTime, nullable=False)
+    text = DB.Column(DB.String(500), nullable=False)
+    sender_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'), nullable=False)
+    sender_username = DB.Column(DB.String(32), DB.ForeignKey('users.username'), nullable=False)
+    receiver_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'), nullable=False)
+    receiver_username = DB.Column(DB.String(32), DB.ForeignKey('users.username'), nullable=False)
+    chat_id = DB.Column(DB.Integer, DB.ForeignKey('chats.id'), nullable=False)
+    chat = DB.relationship('Chat',
+        backref=DB.backref('messages', cascade="all, delete-orphan"),
+        lazy='joined'
+    )
 
     def __init__(self, text, sender_id, sender_username, receiver_id, receiver_username, chat_id):
         self.dt = datetime.utcnow()
