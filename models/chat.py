@@ -6,14 +6,14 @@ class Chat(DB.Model):
     __tablename__ = 'chats'
 
     id = DB.Column(DB.Integer, primary_key=True)
-    dt = DB.Column(DB.DateTime)
-    user1_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
-    user1_name = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
-    user1_sk_sym = DB.Column(DB.String(500))
-    user2_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
-    user2_name = DB.Column(DB.String(32), DB.ForeignKey('users.username'))
-    user2_sk_sym = DB.Column(DB.String(500))
-    last_message_dt = DB.Column(DB.DateTime)
+    dt = DB.Column(DB.DateTime, nullable=False)
+    user1_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'), nullable=False)
+    user1_name = DB.Column(DB.String(32), DB.ForeignKey('users.username'), nullable=False)
+    user1_sk_sym = DB.Column(DB.String(500), nullable=False)
+    user2_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'), nullable=False)
+    user2_name = DB.Column(DB.String(32), DB.ForeignKey('users.username'), nullable=False)
+    user2_sk_sym = DB.Column(DB.String(500), nullable=False)
+    last_message_dt = DB.Column(DB.DateTime, nullable=False)
 
     def __init__(self, user1_id, user1_name, user1_sk_sym, user2_id, user2_name, user2_sk_sym):
         self.dt = datetime.utcnow()
@@ -70,5 +70,25 @@ def update_chat_last_message_time(chat_id, last_message_dt):
     chat = get_chat(chat_id)
     # Update last message time
     chat.last_message_dt = last_message_dt
+    # Commit
+    DB.session.commit()
+
+def find_chat_by_users(userA_id, userB_id):
+    # Check for both possible orders for userA and userB in chat
+    chat = Chat.query.filter(Chat.user1_id == userA_id).filter(Chat.user2_id == userB_id).first()
+    if chat is not None:
+        return chat.id
+    chat = Chat.query.filter(Chat.user1_id == userB_id).filter(Chat.user2_id == userA_id).first()
+    if chat is not None:
+        return chat.id
+    # No such chat exists
+    return None
+
+def delete_chat(chat_id):
+    chat = get_chat(chat_id)
+    if chat is None:
+        return None
+    # Delete from table
+    DB.session.delete(chat)
     # Commit
     DB.session.commit()

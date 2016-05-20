@@ -148,11 +148,29 @@ def create_chat():
     receiver = models.find_user_by_name(receiver_username)
     if (receiver is None) or (receiver.public_key != receiver_public_key):
         return jsonify(error="Unexpected error.")
+    # Check if such a chat already exists
+    existing_chat_id = models.find_chat_by_users(user_id, receiver.id)
+    if existing_chat_id is not None:
+        return jsonify(chat_id=existing_chat_id)
+    # Chat does not already exist; must create new chat
     chat_id = models.create_chat(user_id, username, sk_sym_1, receiver.id, receiver.username, sk_sym_2)
     # Safety check
     if chat_id is None:
         return jsonify(error="Unable to create chat.")
     return jsonify(chat_id=chat_id)
+
+@app.route('/chat/delete/<int:id>', methods=['POST'])
+def delete_chat(id):
+    # Check that user is logged in
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user']['id']
+    # Check that this chat exists and user is valid participant
+    chat = models.get_chat(id)
+    if not chat or (user_id != chat.user1_id and user_id != chat.user2_id):
+        return make_response(jsonify(error="Not found"), 404)
+    models.delete_chat(id)
+    return redirect(url_for('home'))
 
 @app.route('/chat/<int:id>')
 def chat(id):
