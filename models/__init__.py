@@ -1,6 +1,6 @@
 from user import *
-from message import *
 from chat import *
+from message import *
 from encoded_pairs import *
 
 # Create database and tables

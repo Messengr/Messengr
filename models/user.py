@@ -6,10 +6,10 @@ class User(DB.Model):
     __tablename__ = 'users'
 
     id = DB.Column(DB.Integer, primary_key=True)
-    dt = DB.Column(DB.DateTime)
-    username = DB.Column(DB.String(32), unique=True)
-    pass_hash = DB.Column(DB.String(60))
-    public_key = DB.Column(DB.String(256))
+    dt = DB.Column(DB.DateTime, nullable=False)
+    username = DB.Column(DB.String(32), unique=True, nullable=False)
+    pass_hash = DB.Column(DB.String(60), nullable=False)
+    public_key = DB.Column(DB.String(256), nullable=False)
 
     def __init__(self, username, pass_hash, public_key):
         self.dt = datetime.utcnow()
