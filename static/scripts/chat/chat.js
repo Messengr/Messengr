@@ -1,6 +1,7 @@
 $(document).ready(function(){
     var socket;
     var symmetric_key;
+    var show_encrypted = false;
     
     var path = window.location.pathname;
     var chat_id = path.substring(6, path.length);
@@ -53,7 +54,12 @@ $(document).ready(function(){
         if (!symmetric_key) {
             computeSymmetricKey();
         }
-        msg = sjcl.decrypt(symmetric_key, msg);
+        
+        if (show_encrypted) {
+            msg = sjcl.decrypt(symmetric_key, msg);
+        } else {
+            msg = jQuery.parseJSON(msg).ct;
+        }
         
         // Message processing for search protocol
         processNewMessage(msg_id, msg);
@@ -74,6 +80,8 @@ $(document).ready(function(){
             $("#send_message").click();
         }
     });
+    
+    
     // Send new message to server when 'Send' button is clicked
     $("#send_message").click(function() {
         var message = $('#message').val();
@@ -104,6 +112,11 @@ $(document).ready(function(){
         });
     });
 
+    // Toggle encryption when 'Toggle Encryption' button is pressed
+    $('#toggleDecryption').click(function () {
+        toggleDecryption();
+    });
+    
     $(".text-warning").each(function(index, element) {
         if (!symmetric_key) {
             computeSymmetricKey();
@@ -175,5 +188,32 @@ $(document).ready(function(){
                         )
                     )
                 );
+    };
+    
+    function toggleDecryption() {
+        show_encrypted = !show_encrypted;
+        if (show_encrypted) {
+            $(".text-warning").each(function(index, element) {
+                if (!symmetric_key) {
+                    computeSymmetricKey();
+                }
+                var decrypted_msg = $(this).text();
+                var encrypted_msg = sjcl.encrypt(symmetric_key, decrypted_msg);
+                $(this).attr('data-enc', encrypted_msg);
+                var ciphertext = jQuery.parseJSON(encrypted_msg).ct;
+                $(this).text(ciphertext);
+
+            });
+        } else {
+            $(".text-warning").each(function(index, element) {
+                if (!symmetric_key) {
+                    computeSymmetricKey();
+                }
+                var encrypted_msg = $(this).attr('data-enc');
+                var decrypted_msg = sjcl.decrypt(symmetric_key, encrypted_msg);
+                $(this).text(decrypted_msg);
+            });
+        }
+       
     };
 });
