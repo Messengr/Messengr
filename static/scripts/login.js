@@ -54,12 +54,13 @@ $(document).ready(function(){
                 return;
             }
             // Account successfully created
-            // Store keys in local storage
+            // Encrypt user data and store in local storage
             var username = data.username;
-            var public_key_name = username + "_public_key";
-            var secret_key_name = username + "_secret_key";
-            localStorage.setItem(public_key_name, pub_serialized);
-            localStorage.setItem(secret_key_name, sec_serialized);
+            var user_data = {'username': username, 'public_key': pub_serialized, 'secret_key': sec_serialized};
+            // Encrypt user data using password
+            var encrypted_user_data = sjcl.encrypt(password, JSON.stringify(user_data))
+            // Add item to local storage
+            localStorage.setItem(username, encrypted_user_data);
             // Redirect to homepage
             window.location.href = $SCRIPT_ROOT + "/";
         });

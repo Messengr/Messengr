@@ -21,9 +21,11 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        serialized_sk = localStorage.getItem(CURRENT_USERNAME + "_secret_key");
+        var encrypted_user_data = localStorage.getItem(CURRENT_USERNAME);
+        var user_data = JSON.parse(sjcl.decrypt(password, encrypted_user_data));
+        var serialized_sk = user_data["secret_key"];
         // Unserialized private key:
-        unserialized_sk = new sjcl.ecc.elGamal.secretKey(
+        var unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
             sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(serialized_sk))
         );
