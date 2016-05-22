@@ -6,6 +6,7 @@ os.environ["APP_SETTINGS"] = "config.DevelopmentConfig"
 import app as SecureMessenger
 import unittest
 import tempfile
+import json
 
 import models
 
@@ -20,18 +21,19 @@ class BaseTestCase(unittest.TestCase):
         os.close(self.db_fd)
         os.unlink(SecureMessenger.app.config['DATABASE'])
         
-    def create_account(self, username, password, public_key):
+    def create_account(self, username, password, public_key, user_data):
         return self.app.post('/user/create', data=dict(
             username=username,
             password=password,
-            public_key=public_key
-        ), follow_redirects=True)
+            public_key=public_key,
+            user_data=user_data)
+        )
         
     def login(self, username, password):
         return self.app.post('/login', data=dict(
             username=username,
-            password=password
-        ), follow_redirects=True)
+            password=password)
+        )
     
     def logout(self):
         return self.app.get('/logout', follow_redirects=True)
@@ -39,7 +41,7 @@ class BaseTestCase(unittest.TestCase):
 class LoginTestCase(BaseTestCase):
     def test_login_unauthenticated(self):
         rv = self.login('test', 'test')
-        self.assertIn("Error: Invalid username and/or password", rv.data)
+        self.assertIn("Invalid username and/or password", json.loads(rv.data)['error'])
         self.assertEqual(rv.status_code, 200)
 
         

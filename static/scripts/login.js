@@ -1,5 +1,46 @@
 $(document).ready(function(){
 
+    function sha256(text) {
+        var bitArray = sjcl.hash.sha256.hash(text);
+        var digest_sha256 = sjcl.codec.hex.fromBits(bitArray);
+        return digest_sha256;
+    }
+
+    $('#login').submit(function(e) {
+        // Stop form from submitting
+        e.preventDefault();
+
+        // Get all inputs
+        var req_data = {};
+        $.each($('#login').serializeArray(), function(i, field) {
+            req_data[field.name] = field.value;
+        });
+
+        // Send SHA256 of password
+        var password = req_data['password'];
+        req_data['password'] = sha256(password);
+
+        $.post($SCRIPT_ROOT + '/login', req_data, function(data) {
+            if (data.error) {
+                $('#login')[0].reset();
+                alert(data.error);
+                return;
+            }
+            if (!data.user_data) {
+                $('#login')[0].reset();
+                alert("Unexpected error. Please try again later.");
+                return;
+            }
+            // Successfully logged in
+            // Decrypt user-data and store
+            var encrypted_user_data = data.user_data;
+            var user_data = sjcl.decrypt(password, encrypted_user_data);
+            localStorage.setItem(req_data['username'], user_data);
+            // Redirect to homepage
+            window.location.href = $SCRIPT_ROOT + "/";
+        });
+    });
+
     $('#create_account').submit(function(e) {
         // Stop form from submitting
         e.preventDefault();
@@ -41,6 +82,12 @@ $(document).ready(function(){
             return false;
         }
 
+        req_data['password'] = sha256(password);
+
+        var user_data = {'username': username, 'public_key': pub_serialized, 'secret_key': sec_serialized};
+        var encrypted_user_data = sjcl.encrypt(password, JSON.stringify(user_data));
+        req_data['user_data'] = encrypted_user_data;
+
         // Try to create account
         $.post($SCRIPT_ROOT + '/user/create', req_data, function(data) {
             if (data.error) {
@@ -48,15 +95,8 @@ $(document).ready(function(){
                 alert(data.error);
                 return;
             }
-            if (!data.username) {
-                $('#create_account')[0].reset();
-                alert("Unexpected error. Please try again later.");
-                return;
-            }
             // Account successfully created
-            // Store keys in local storage
-            var username = data.username;
-            var user_data = {'username': username, 'public_key': pub_serialized, 'secret_key': sec_serialized};
+            // Store user-data
             localStorage.setItem(username, JSON.stringify(user_data));
             // Redirect to homepage
             window.location.href = $SCRIPT_ROOT + "/";
