@@ -77,6 +77,12 @@ def login():
     # Deliver login page
     return render_template('login.html', error=error)
 
+@app.route('/user/findAll')
+def find_users():
+    username = request.args.get('term')
+    usernames_found = [{"label": user.to_dict()['username'], "value": user.to_dict()['username']} for user in models.find_user_by_name_fuzzy(username)]
+    print json.dumps(usernames_found)
+    return json.dumps(usernames_found)
 
 @app.route('/user/create', methods=['POST'])
 def create_user():

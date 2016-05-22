@@ -4,7 +4,12 @@ $(document).ready(function(){
         if (this.id !== "") {
             window.location.href = '/chat/' + this.id;
         }
-    });    
+    }); 
+
+    //Input to #receiver causes call to route to get matched users
+    $("#receiver").autocomplete({
+        source: $SCRIPT_ROOT + '/user/findAll'
+    });
 
     // Click 'New Chat' button when 'Enter' key is pressed
     $("#receiver").keyup(function(event){

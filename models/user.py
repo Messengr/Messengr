@@ -29,6 +29,10 @@ class User(DB.Model):
             'public_key': self.public_key
         }
 
+def find_user_by_name_fuzzy(username):
+    #Queries using part of a username. Does a fuzzy search through database.
+    fuzzy_string = '%' + username + '%'
+    return User.query.filter(User.username.like(fuzzy_string)).order_by(User.username.asc()).all()
 
 def find_user_by_name(username):
     # Query using username and return first
