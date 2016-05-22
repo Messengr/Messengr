@@ -107,7 +107,7 @@ function encodeEntry(key, w, id, cnt) {
 function produceEncodedPairList(key, id, message, chat_id) {
     var keywordList = getKeywords(message);
     var encodedPairList = [];
-    var user_data = JSON.parse(localStorage.getItem(CURRENT_USERNAME));
+    var user_data = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME));
 
     keywordList.forEach(function (keyword, index, array) {
         var safeKeyword = "keyword-" + chat_id + "-" + keyword;
@@ -125,7 +125,7 @@ function produceEncodedPairList(key, id, message, chat_id) {
         encodedPairList.push(encodedPair);
     });
 
-    localStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
+    sessionStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
 
     return encodedPairList;
 }

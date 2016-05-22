@@ -71,9 +71,10 @@ def login():
         if request.form['username'] and request.form['password'] and models.user_authenticated(request.form['username'], request.form['password']):
             session['logged_in'] = True
             session['user'] = models.find_user_by_name(request.form['username']).to_dict()
-            return redirect(url_for('home'))
+            encrypted_user_data = session['user']['user_data']
+            return jsonify(user_data=encrypted_user_data)
         else:
-            error = 'Invalid username and/or password'
+            return jsonify(error='Invalid username and/or password')
     # Deliver login page
     return render_template('login.html', error=error)
 
@@ -95,10 +96,11 @@ def create_user():
     username = request.form.get('username')
     password = request.form.get('password') 
     public_key = request.form.get('public_key')
+    user_data = request.form.get('user_data')
 
     # Validate entered username and password
     error = None
-    if None in [username, password, public_key]:
+    if None in [username, password, public_key, user_data]:
         error  = "Request missing a field!"
     if len(username) == 0 or len(username) > 32:
         error = "Invalid username. Must be nonempty and contain at most 32 characters."
@@ -114,7 +116,7 @@ def create_user():
         return jsonify(error=error)
 
     # Add new user to database
-    id = models.add_user_to_db(username, password, public_key)
+    id = models.add_user_to_db(username, password, public_key, user_data)
     if id is None:
         # Database error
         return jsonify(error="Unexpected error.")
@@ -122,7 +124,7 @@ def create_user():
     # Redirect new user to home page
     session['logged_in'] = True
     session['user'] = models.find_user_by_name(username).to_dict()
-    return jsonify(username=session['user']['username'])
+    return jsonify(error=None)
 
 
 @app.route('/logout')
