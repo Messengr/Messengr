@@ -6,9 +6,9 @@ $(document).ready(function(){
         }
     }); 
 
-    //Input to #receiver causes call to route to get matched users
+    // Input to #receiver causes call to route to get matched users
     $("#receiver").autocomplete({
-        source: $SCRIPT_ROOT + '/user/findAll'
+        source: $SCRIPT_ROOT + '/user/find_all'
     });
 
     // Click 'New Chat' button when 'Enter' key is pressed

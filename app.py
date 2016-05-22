@@ -77,10 +77,13 @@ def login():
     # Deliver login page
     return render_template('login.html', error=error)
 
-@app.route('/user/findAll')
+@app.route('/user/find_all')
 def find_users():
+    if 'logged_in' not in session or 'user' not in session:
+        return redirect(url_for('login'))
     username = request.args.get('term')
-    usernames_found = [{"label": user.to_dict()['username'], "value": user.to_dict()['username']} for user in models.find_user_by_name_fuzzy(username)]
+    similar_usernames = models.find_user_by_name_fuzzy(username)
+    usernames_found = [{"label": user.to_dict()['username'], "value": user.to_dict()['username']} for user in similar_usernames]
     return json.dumps(usernames_found)
 
 @app.route('/user/create', methods=['POST'])
