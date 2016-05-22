@@ -48,7 +48,7 @@
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
                         {% if not 'logged_in' in session %}
-                            <script>localStorage.clear();</script>
+                            <script>sessionStorage.clear();</script>
                             <li><a href="{{ url_for('login') }}">Login</a></li>
                         {% else %}
                             <li><a href="{{ url_for('logout') }}">Logout</a></li>

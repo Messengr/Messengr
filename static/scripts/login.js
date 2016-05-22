@@ -35,7 +35,7 @@ $(document).ready(function(){
             // Decrypt user-data and store
             var encrypted_user_data = data.user_data;
             var user_data = sjcl.decrypt(password, encrypted_user_data);
-            localStorage.setItem(req_data['username'], user_data);
+            sessionStorage.setItem(req_data['username'], user_data);
             // Redirect to homepage
             window.location.href = $SCRIPT_ROOT + "/";
         });
@@ -97,7 +97,7 @@ $(document).ready(function(){
             }
             // Account successfully created
             // Store user-data
-            localStorage.setItem(username, JSON.stringify(user_data));
+            sessionStorage.setItem(username, JSON.stringify(user_data));
             // Redirect to homepage
             window.location.href = $SCRIPT_ROOT + "/";
         });

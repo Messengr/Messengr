@@ -24,7 +24,7 @@ $(document).ready(function(){
         }
         
         var token = tokenize(symmetric_key, keyword);
-        var count = JSON.parse(localStorage.getItem(CURRENT_USERNAME))['keyword-' + chat_id + "-" + keyword];
+        var count = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME))['keyword-' + chat_id + "-" + keyword];
         var req_data = {
             "token" : token, 
             "count" : count
@@ -125,7 +125,7 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        var serialized_sk = JSON.parse(localStorage.getItem(CURRENT_USERNAME))["secret_key"];
+        var serialized_sk = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME))["secret_key"];
         // Unserialized private key:
         var unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
@@ -142,14 +142,14 @@ $(document).ready(function(){
      */
     function processNewMessage(message_id, message) {
         var message_key = "message-" + message_id.toString();
-        var processed_id = JSON.parse(localStorage.getItem(CURRENT_USERNAME))[message_key];
+        var processed_id = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME))[message_key];
         if (processed_id != null) {
             return false;
         } else {
             processMessage(symmetric_key, message_id, message, chat_id);
-            var user_data = JSON.parse(localStorage.getItem(CURRENT_USERNAME));
+            var user_data = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME));
             user_data[message_key] = "processed";
-            localStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
+            sessionStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
         }
         return true;
     }
