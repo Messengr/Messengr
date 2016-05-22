@@ -1,4 +1,7 @@
 $(document).ready(function(){
+
+
+    var password;
     var socket;
     var symmetric_key;
     
@@ -17,7 +20,11 @@ $(document).ready(function(){
         }
         
         var token = tokenize(symmetric_key, keyword);
-        var count = localStorage.getItem('keyword-' + chat_id + "-" + keyword);
+        var encrypted_user_data = localStorage.getItem(CURRENT_USERNAME);
+        promptUserForPassword();
+        var user_data = JSON.parse(sjcl.decrypt(password, encrypted_user_data));
+        forgetPassword();
+        var count = user_data['keyword-' + chat_id + "-" + keyword];
         var req_data = {
             "token" : token, 
             "count" : count
@@ -118,9 +125,13 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        serialized_sk = localStorage.getItem(CURRENT_USERNAME + "_secret_key");
+        var encrypted_user_data = localStorage.getItem(CURRENT_USERNAME);
+        promptUserForPassword();
+        var user_data = JSON.parse(sjcl.decrypt(password, encrypted_user_data));
+        forgetPassword();
+        var serialized_sk = user_data["secret_key"];
         // Unserialized private key:
-        unserialized_sk = new sjcl.ecc.elGamal.secretKey(
+        var unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
             sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(serialized_sk))
         );
@@ -135,12 +146,21 @@ $(document).ready(function(){
      */
     function processNewMessage(message_id, message) {
         var message_key = "message-" + message_id.toString();
-        var processed_id = localStorage.getItem(message_key);
+        var encrypted_user_data = localStorage.getItem(CURRENT_USERNAME);
+        promptUserForPassword();
+        var user_data = JSON.parse(sjcl.decrypt(password, encrypted_user_data));
+        var processed_id = user_data[message_key];
         if (processed_id != null) {
+            forgetPassword();
             return false;
         } else {
             processMessage(symmetric_key, message_id, message, chat_id);
-            localStorage.setItem(message_key, "processed");
+            user_data[message_key] = "processed";
+            // Encrypt user data using password
+            encrypted_user_data = sjcl.encrypt(password, JSON.stringify(user_data))
+            forgetPassword();
+            // Add item to local storage
+            localStorage.setItem(CURRENT_USERNAME, encrypted_user_data);
         }
         return true;
     }
@@ -176,4 +196,14 @@ $(document).ready(function(){
                     )
                 );
     };
+
+    function promptUserForPassword() {
+        while (password == null) {
+            password = prompt("Please enter your password", "");
+        }
+    }
+
+    function forgetPassword() {
+        password = null;
+    }
 });
