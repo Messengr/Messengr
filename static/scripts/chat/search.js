@@ -1,10 +1,10 @@
 $(document).ready(function(){
     var symmetric_key;
+    var password;
     
     // Scroll to bottom
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
 
-    // Disconnect socket and go to home page when 'Leave Chat' button is clicked
     $('#returnToChat').click(function (url) {
         var new_path = window.location.href;
         new_path = new_path.substr(0, new_path.length - 7);
@@ -22,7 +22,9 @@ $(document).ready(function(){
 
     function computeSymmetricKey() {
         var encrypted_user_data = localStorage.getItem(CURRENT_USERNAME);
+        promptUserForPassword();
         var user_data = JSON.parse(sjcl.decrypt(password, encrypted_user_data));
+        forgetPassword();
         var serialized_sk = user_data["secret_key"];
         // Unserialized private key:
         var unserialized_sk = new sjcl.ecc.elGamal.secretKey(
@@ -48,5 +50,15 @@ $(document).ready(function(){
             localStorage.setItem(message_key, "processed");
         }
         return true;
+    }
+
+    function promptUserForPassword() {
+        while (password == null) {
+            password = prompt("Please enter your password", "");
+        }
+    }
+
+    function forgetPassword() {
+        password = null;
     }
 });

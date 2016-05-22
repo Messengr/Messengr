@@ -108,21 +108,39 @@ function produceEncodedPairList(key, id, message, chat_id) {
     var keywordList = getKeywords(message);
     var encodedPairList = [];
 
+    // Ask user for password
+    var password;
+    while (password == null) {
+        password = prompt("Please enter your password", "");
+    }
+
+    // Get encrypted user data
+    var encrypted_user_data = localStorage.getItem(CURRENT_USERNAME);
+    // Decrypt user data
+    var user_data = JSON.parse(sjcl.decrypt(password, encrypted_user_data));
+
     keywordList.forEach(function (keyword, index, array) {
         var safeKeyword = "keyword-" + chat_id + "-" + keyword;
-        var keyword_count = localStorage.getItem(safeKeyword);
+        var keyword_count = user_data[safeKeyword];
 
         if (keyword_count == null) {
             keyword_count = 1;
         } else {
             keyword_count = parseInt(keyword_count)+1;
         }
-        localStorage.setItem(safeKeyword, keyword_count);
-        
+        user_data[safeKeyword] = keyword_count;
+
         // Update document count for keyword.
         var encodedPair = encodeEntry(key, keyword, id, keyword_count);
         encodedPairList.push(encodedPair);
     });
+
+    // Encrypt user data
+    encrypted_user_data = sjcl.encrypt(password, JSON.stringify(user_data));
+    // Forget password
+    password = null;
+    // Store updated encrypted user data
+    localStorage.setItem(CURRENT_USERNAME, encrypted_user_data);
 
     return encodedPairList;
 }
