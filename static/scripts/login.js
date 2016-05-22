@@ -56,10 +56,8 @@ $(document).ready(function(){
             // Account successfully created
             // Store keys in local storage
             var username = data.username;
-            var public_key_name = username + "_public_key";
-            var secret_key_name = username + "_secret_key";
-            localStorage.setItem(public_key_name, pub_serialized);
-            localStorage.setItem(secret_key_name, sec_serialized);
+            var user_data = {'username': username, 'public_key': pub_serialized, 'secret_key': sec_serialized};
+            localStorage.setItem(username, JSON.stringify(user_data));
             // Redirect to homepage
             window.location.href = $SCRIPT_ROOT + "/";
         });

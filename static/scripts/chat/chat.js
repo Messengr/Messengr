@@ -8,6 +8,13 @@ $(document).ready(function(){
     // Scroll to bottom
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
     
+
+    // Click 'Search!' button when 'Enter' key is pressed
+    $("#search_text").keyup(function(event){
+        if(event.keyCode == 13){
+            $("#search_keyword").click();
+        }
+    });
     // Handle Search
     $('#search_keyword').click(function() {
         var keyword = $('#search_text').val().toLowerCase();
@@ -17,7 +24,7 @@ $(document).ready(function(){
         }
         
         var token = tokenize(symmetric_key, keyword);
-        var count = localStorage.getItem('keyword-' + chat_id + "-" + keyword);
+        var count = JSON.parse(localStorage.getItem(CURRENT_USERNAME))['keyword-' + chat_id + "-" + keyword];
         var req_data = {
             "token" : token, 
             "count" : count
@@ -118,9 +125,9 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        serialized_sk = localStorage.getItem(CURRENT_USERNAME + "_secret_key");
+        var serialized_sk = JSON.parse(localStorage.getItem(CURRENT_USERNAME))["secret_key"];
         // Unserialized private key:
-        unserialized_sk = new sjcl.ecc.elGamal.secretKey(
+        var unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
             sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(serialized_sk))
         );
@@ -135,12 +142,14 @@ $(document).ready(function(){
      */
     function processNewMessage(message_id, message) {
         var message_key = "message-" + message_id.toString();
-        var processed_id = localStorage.getItem(message_key);
+        var processed_id = JSON.parse(localStorage.getItem(CURRENT_USERNAME))[message_key];
         if (processed_id != null) {
             return false;
         } else {
             processMessage(symmetric_key, message_id, message, chat_id);
-            localStorage.setItem(message_key, "processed");
+            var user_data = JSON.parse(localStorage.getItem(CURRENT_USERNAME));
+            user_data[message_key] = "processed";
+            localStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
         }
         return true;
     }

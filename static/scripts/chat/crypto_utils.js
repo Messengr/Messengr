@@ -107,22 +107,25 @@ function encodeEntry(key, w, id, cnt) {
 function produceEncodedPairList(key, id, message, chat_id) {
     var keywordList = getKeywords(message);
     var encodedPairList = [];
+    var user_data = JSON.parse(localStorage.getItem(CURRENT_USERNAME));
 
     keywordList.forEach(function (keyword, index, array) {
         var safeKeyword = "keyword-" + chat_id + "-" + keyword;
-        var keyword_count = localStorage.getItem(safeKeyword);
+        var keyword_count = user_data[safeKeyword];
 
         if (keyword_count == null) {
             keyword_count = 1;
         } else {
             keyword_count = parseInt(keyword_count)+1;
         }
-        localStorage.setItem(safeKeyword, keyword_count);
+        user_data[safeKeyword] = keyword_count;
         
         // Update document count for keyword.
         var encodedPair = encodeEntry(key, keyword, id, keyword_count);
         encodedPairList.push(encodedPair);
     });
+
+    localStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
 
     return encodedPairList;
 }
