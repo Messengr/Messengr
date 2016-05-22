@@ -4,7 +4,6 @@ $(document).ready(function(){
     // Scroll to bottom
     $("#chat_base").scrollTop($("#chat_base")[0].scrollHeight);
 
-    // Disconnect socket and go to home page when 'Leave Chat' button is clicked
     $('#returnToChat').click(function (url) {
         var new_path = window.location.href;
         new_path = new_path.substr(0, new_path.length - 7);
@@ -21,9 +20,9 @@ $(document).ready(function(){
     });
 
     function computeSymmetricKey() {
-        serialized_sk = localStorage.getItem(CURRENT_USERNAME + "_secret_key");
+        var serialized_sk = JSON.parse(localStorage.getItem(CURRENT_USERNAME))["secret_key"];
         // Unserialized private key:
-        unserialized_sk = new sjcl.ecc.elGamal.secretKey(
+        var unserialized_sk = new sjcl.ecc.elGamal.secretKey(
             sjcl.ecc.curves.c256,
             sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(serialized_sk))
         );
@@ -38,12 +37,14 @@ $(document).ready(function(){
      */
     function processNewMessage(message_id, message) {
         var message_key = "message-" + message_id.toString();
-        var processed_id = localStorage.getItem(message_key);
+        var processed_id = JSON.parse(localStorage.getItem(CURRENT_USERNAME))[message_key];
         if (processed_id != null) {
             return false;
         } else {
-            processMessage(symmetric_key, message_id, message);
-            localStorage.setItem(message_key, "processed");
+            processMessage(symmetric_key, message_id, message, chat_id);
+            var user_data = JSON.parse(localStorage.getItem(CURRENT_USERNAME));
+            user_data[message_key] = "processed";
+            localStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
         }
         return true;
     }
