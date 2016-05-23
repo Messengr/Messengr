@@ -73,8 +73,8 @@ $(document).ready(function(){
         if (username.match(/^[a-zA-Z0-9_-]+$/) == null || username.match(/^[a-zA-Z0-9_-]+$/)[0] !== username) {
             error = "Invalid username. Must contain only letters (a-z), numbers (0-9), dashes (-), underscores (_).";
         }
-        if (password.length < 8 || password.length > 128) {
-            error = "Invalid password. Must be at least 8 characters and at most 128 characters.";
+        if (!password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/)) {
+            error = "Invalid password. Must be at least 8 characters and contain a lowercase letter, an uppercase letter, and a digit.";
         }
         if (error) {
             $('#create_account')[0].reset();
