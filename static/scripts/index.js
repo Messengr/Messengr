@@ -27,6 +27,10 @@ $(document).ready(function(){
             // Invalid username, do not send
             return;
         }
+        if (receiver_username === CURRENT_USERNAME) {
+            alert("Can't create a chat with yourself.");
+            return;
+        }
         // Ask for public keys
         $.getJSON($SCRIPT_ROOT + '/public_key', {
             'receiver_username': receiver_username
