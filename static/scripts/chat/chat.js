@@ -62,13 +62,15 @@ $(document).ready(function(){
         }
         msg = sjcl.decrypt(symmetric_key, msg);
         
-        // Message processing for search protocol
-        processNewMessage(msg_id, msg);
-        
         if (CURRENT_USERNAME == sender) {
+            // Message processing for search protocol
+            // Do update pairs
+            processNewMessage(msg_id, msg, true);
             $("#chat_base").append(newSenderMessage(msg, sender, dt));
         }
-        if (CURRENT_USERNAME == receiver) {
+        else if (CURRENT_USERNAME == receiver) {
+            // Message processing for search protocol
+            processNewMessage(msg_id, msg, false);
             $("#chat_base").append(newReceiverMessage(msg, sender, dt));
         }
         // Scroll to bottom
@@ -121,7 +123,7 @@ $(document).ready(function(){
         
         // Process new messages
         var message_id = parseInt($(this).attr('data-id'));
-        processNewMessage(message_id, decrypted_msg);
+        processNewMessage(message_id, decrypted_msg, false);
     });
 
     function computeSymmetricKey() {
@@ -138,15 +140,16 @@ $(document).ready(function(){
      * Checks if message has been processed before and processes if not.
      * @param {integer} message_id The identifier for a message.
      * @param {string} message The message to be processed.
+     * @param {boolean} update_pairs whether or not pairs should be updated
      * @return {boolean} Returns a boolean of whether or not the message was processed.
      */
-    function processNewMessage(message_id, message) {
+    function processNewMessage(message_id, message, update_pairs) {
         var message_key = "message-" + message_id.toString();
         var processed_id = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME))[message_key];
         if (processed_id != null) {
             return false;
         } else {
-            processMessage(symmetric_key, message_id, message, chat_id);
+            processMessage(symmetric_key, message_id, message, chat_id, update_pairs);
             var user_data = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME));
             user_data[message_key] = "processed";
             sessionStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));

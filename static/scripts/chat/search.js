@@ -28,24 +28,4 @@ $(document).ready(function(){
         );
         symmetric_key = sjcl.decrypt(unserialized_sk, ENCRYPTED_SYM_KEY);
     }
-    
-    /**
-     * Checks if message has been processed before and processes if not.
-     * @param {integer} message_id The identifier for a message.
-     * @param {string} message The message to be processed.
-     * @return {boolean} Returns a boolean of whether or not the message was processed.
-     */
-    function processNewMessage(message_id, message) {
-        var message_key = "message-" + message_id.toString();
-        var processed_id = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME))[message_key];
-        if (processed_id != null) {
-            return false;
-        } else {
-            processMessage(symmetric_key, message_id, message, chat_id);
-            var user_data = JSON.parse(sessionStorage.getItem(CURRENT_USERNAME));
-            user_data[message_key] = "processed";
-            sessionStorage.setItem(CURRENT_USERNAME, JSON.stringify(user_data));
-        }
-        return true;
-    }
 });

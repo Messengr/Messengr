@@ -136,23 +136,25 @@ function produceEncodedPairList(key, id, message, chat_id) {
  * @param {integer} id The message identifier of the current message being processed.
  * @param {string} message Plaintext message to be processed.
  * @param {string} chat_id Chat identifier to be processed.
+ * @param {boolean} update_pairs whether or not the pairs should be updated
  * @return {boolean} Returns a boolean of whether or not the message was processed.
  */
-function processMessage(key, id, message, chat_id){
+function processMessage(key, id, message, chat_id, update_pairs){
     // Extracts encoded pair list from message
     encodedPairList = produceEncodedPairList(key, id, message, chat_id);
-    
-    var req_data = {
-        'pairs': JSON.stringify(encodedPairList)
-    };
-    
-    // Sends encoded pair list to server
-    var path = window.location.pathname;
-    $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
-        if (data.error) {
-            alert(data.error);
-        }
-        return;
-    });
+
+    if (update_pairs) {
+        var req_data = {
+            'pairs': JSON.stringify(encodedPairList)
+        };
+        // Sends encoded pair list to server
+        var path = window.location.pathname;
+        $.post($SCRIPT_ROOT + path + '/update/pairs', req_data, function(data) {
+            if (data.error) {
+                alert(data.error);
+            }
+            return;
+        });
+    }
     return true;
 }
